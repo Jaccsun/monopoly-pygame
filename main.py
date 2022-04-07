@@ -12,6 +12,7 @@ MULTIPLAYER = "1"
 while in_selection:
     mode = input("Select a mode: 0 - Singleplayer Mode, 1 - Multiplayer mode: ")
     if mode == SINGLEPLAYER:
+
         input("-Thank you for selecting Singleplayer mode-")
         in_selection = False
     elif mode == MULTIPLAYER:

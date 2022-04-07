@@ -68,19 +68,20 @@ def enter_selection(current_player):
         select = input("0 - Roll | 1 - Property manager | 2 - Trade | 3 - Forfeit ")
 
         # Rolls the die upon player selection.
-        if select == "0":
-            select_roll(current_player)
-            in_selection = False
-        elif select == "1":
-            select_property_manager(current_player)
-        elif select == "2":
-            select_trade()
-        elif select == "3":
-            print("Thanks for playing.")
-            in_selection = False
-            turn_cycle = False
-        else:
-            print("Invalid input")
+        match select:
+            case "0":
+                select_roll(current_player)
+                in_selection = False
+            case "1":
+                select_property_manager(current_player)
+            case "2":
+                select_trade()
+            case "3":
+                print("Thanks for playing.")
+                in_selection = False
+                turn_cycle = False
+            case _:
+                print("Invalid input")
         
         print("Your current cash: " + str(current_player.money) + "$")
         
@@ -115,11 +116,9 @@ def select_roll_prompt_property(landed_on_space, current_player):
                     in_prompt = False
                 else:
                     print("You have purchased " +
-                          str(landed_on_space.space_name) + "!")
-                          
-                    current_player.money -= landed_on_space.printed_price
-                    current_player.properties.append(landed_on_space)
-                    landed_on_space.owner = current_player
+                          str(landed_on_space.space_name) + "!")     
+
+                    current_player.buy(landed_on_space)
                     in_prompt = False
             elif (property_prompt == "n"):
                 print("You decided not to buy " + str(landed_on_space.space_name))
@@ -137,20 +136,35 @@ def select_roll_prompt_property(landed_on_space, current_player):
 
 # Visual property manager to view properties and build.      
 def select_property_manager(current_player):
+    EXIT = "0"
     if len(current_player.properties) == 0:
         print("You don't have any properties.")
     else: 
+       
         print("Your current properties")
-        for owned_property in current_player.properties:
-            print(str(owned_property) + owned_property.space_name)
+        current_player.print_owned_properties()
+
         selection = True
         while selection:
-            select = input("0 - Exit | (1+ Build on Property)")
-            if (select == "0"):
+
+            select = input("0 - Exit | (1-" + str(len(current_player.properties)) +" - Select Property)")
+            is_valid_property_selection = select.isnumeric and (int(select) - 1) < len(current_player.properties)
+
+            if select == EXIT:
                 return None
-            else: 
-                print("Invalid")
-        
+            elif is_valid_property_selection: 
+                
+                selected_property = current_player.properties[int(select) - 1]
+                
+                print("You selected " + selected_property.space_name)
+                print(selected_property.give_tier_description())
+
+                if selected_property.current_tier == 1: 
+                    return None
+                
+            else:
+                print("Invalid Selection.")
+ 
 
 def select_trade():
     print("test")
