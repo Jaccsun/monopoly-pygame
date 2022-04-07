@@ -15,8 +15,9 @@ class Player:
 
     def move(self, roll):
         if(self.position + roll.value >= 40):
-            self.position = 40 - roll.value
-        self.position += roll.value
+            self.position = (self.position + roll.value) - 40
+        else: 
+            self.position += roll.value
 
 
         

@@ -9,15 +9,13 @@ in_selection = True
 SINGLEPLAYER = "0"
 MULTIPLAYER = "1"
 
-
 while in_selection:
     mode = input("Select a mode: 0 - Singleplayer Mode, 1 - Multiplayer mode: ")
-    time.sleep(1)
     if mode == SINGLEPLAYER:
-        print("-Thank you for selecting Singleplayer mode-")
+        input("-Thank you for selecting Singleplayer mode-")
         in_selection = False
     elif mode == MULTIPLAYER:
-        print("-Thank you for selecting Multiplayer mode-")
+        input("-Thank you for selecting Multiplayer mode-")
         in_selection = False
     else:
         print("Your answer is not valid, please enter another.")
