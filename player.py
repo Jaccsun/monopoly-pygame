@@ -8,6 +8,7 @@ class Player:
         self.position = 0
         self.money = 1500
         self.properties = []
+        self.railroads_owned = 0
 
     def roll(self):
         roll = Roll(self)
@@ -24,15 +25,11 @@ class Player:
         self.properties.append(landed_on_space)
         landed_on_space.owner = self
         landed_on_space.increase_tier()
-
-    def check_for_monopoly(self):
-        print("")
-
-
-
+            
     def print_owned_properties(self):
         for owned_property in  self.properties:
             print(str(self.properties.index(owned_property) + 1) + " " + owned_property.space_name)
+
 
 
 
