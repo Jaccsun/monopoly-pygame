@@ -1,7 +1,4 @@
-from board.space import Monopoly_Space
-from board.space_types.chance import Monopoly_Chance
-from board.space_types.property import Monopoly_Property
-from board.space_types.community_chest import Monopoly_Community_Chest
+from board.space import *
 
 class Board:
     def __init__(self):
@@ -83,19 +80,15 @@ class Board:
 
         # STATIONS
 
-        READING_RAILROAD = Monopoly_Property("Reading Railroad", 200,
-                        100, None, (25, 50, 100, 200))
-        PENNSYLVANIA_RAILROAD = Monopoly_Property("Pennsylvania Railroad",
-                              200, 100, None, (25, 50, 100, 200))
-        B_O_RAILROAD = Monopoly_Property("B & O Railroad",  200,
-                    100, None, (25, 50, 100, 200))
-        SHORT_LINE = Monopoly_Property("Short Line Railroad",  200,
-                  100, None, (25, 50, 100, 200))
+        READING_RAILROAD = Monopoly_Railroad("Reading Railroad")
+        PENNSYLVANIA_RAILROAD = Monopoly_Railroad("Pennsylvania Railroad")
+        B_O_RAILROAD = Monopoly_Railroad("B & O Railroad")
+        SHORT_LINE = Monopoly_Railroad("Short Line Railroad")
 
         # UTILITIES
 
-        ELECTRIC_COMPANY = Monopoly_Space("Electric Company")
-        WATER_WORKS = Monopoly_Space("Water Works")
+        ELECTRIC_COMPANY = Monopoly_Utility("Electric Company")
+        WATER_WORKS = Monopoly_Utility("Water Works")
 
         self.space = (GO, MEDITERRANEAN_AVENUE, COMMUNITY_CHEST, BALTIC_AVENUE, INCOME_TAX, READING_RAILROAD, ORIENTAL_AVENUE, CHANCE,
                  VERMONT_AVENUE, CONNECTICUT_AVENUE, JUST_VISITING, ST_CHARLES_PLACE, ELECTRIC_COMPANY, STATES_AVENUE, VIRGINIA_AVENUE,

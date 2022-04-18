@@ -1,7 +1,4 @@
 
-from board.space_types.property import Monopoly_Property
-
-
 def enter_selection(current_player, board):
     in_selection = True
 
@@ -47,17 +44,16 @@ def select_roll(current_player, board):
     print("You landed on " + str(landed_on_space.space_name))
 
     # Property space type.
-    if(isinstance(landed_on_space, Monopoly_Property)):
-        select_roll_prompt_property(landed_on_space, current_player)
-        
+    if landed_on_space.IS_BUYABLE:
+        prompt_buyable_space(landed_on_space, current_player)
 
 # Property prompt system.
-def select_roll_prompt_property(landed_on_space, current_player):
+def prompt_buyable_space(landed_on_space, current_player):
     if (landed_on_space.owner == None):
         in_prompt = True
         while(in_prompt):
-            property_prompt = input(
-                "Would you like to buy this property? (y/n): ")
+            prompt = landed_on_space.get_prompt()
+            property_prompt = input(prompt)
             if (property_prompt == "y"):
                 if(current_player.money - landed_on_space.printed_price < 0):
                     print("You don't have enough money to purchase this property.")
@@ -76,11 +72,26 @@ def select_roll_prompt_property(landed_on_space, current_player):
     elif (landed_on_space.owner == current_player):
         print("You own this property")
     else:   
-        print("This property is owned by " + landed_on_space.owner)
-        print("Amount owned: " + landed_on_space.get_current_price())
+
+        print("This property is owned by Player " + str(landed_on_space.owner.id))
+        print("Amount owned: " + str(landed_on_space.get_current_price()) + "$")
         in_selection = True
         while in_selection:
-            input("0 - Pay | 1 - Mortage")
+            select = input("0 - Pay | 1 - Mortage | 2 - Bankrupt ")
+            match select:
+                case "0":
+                    if (current_player.money - landed_on_space.get_current_price < 0):
+                        print("You paid" + landed_on_space.owner + " " + landed_on_space.get_current_price)
+                        current_player.pay(landed_on_space.owner)
+                        in_selection = False
+                    else:
+                        print("You don't have enough money to pay.")
+                case "1":
+                    print("Mortage properties?")
+                case "2":
+                    print("Thanks for playing!")
+                    in_selection = False
+
 
 # Visual property manager to view properties and build.      
 def select_property_manager(current_player):
@@ -112,6 +123,9 @@ def select_property_manager(current_player):
                 
             else:
                 print("Invalid Selection.")
+
+
+
 
 def select_trade():
     print("test")

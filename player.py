@@ -25,7 +25,11 @@ class Player:
         self.properties.append(landed_on_space)
         landed_on_space.owner = self
         landed_on_space.increase_tier()
-            
+
+    def pay(self, player, landed_on_space):
+        self.money -= landed_on_space.current_price
+        player.money += landed_on_space.current_price
+
     def print_owned_properties(self):
         for owned_property in  self.properties:
             print(str(self.properties.index(owned_property) + 1) + " " + owned_property.space_name)
