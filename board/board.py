@@ -1,8 +1,12 @@
 from board.space import *
+import pygame
+import os 
 
 class Board:
     def __init__(self):
         
+        self.IMAGE = pygame.image.load(os.path.join('Assets', 'board.jpg'))
+
         GO = Monopoly_Space("GO")
         COMMUNITY_CHEST = Monopoly_Community_Chest("Community Chest")
         INCOME_TAX = Monopoly_Space("Income Tax")
