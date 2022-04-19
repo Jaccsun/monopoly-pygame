@@ -80,12 +80,13 @@ def prompt_buyable_space(landed_on_space, current_player):
             select = input("0 - Pay | 1 - Mortage | 2 - Bankrupt ")
             match select:
                 case "0":
-                    if (current_player.money - landed_on_space.get_current_price < 0):
-                        print("You paid" + landed_on_space.owner + " " + landed_on_space.get_current_price)
-                        current_player.pay(landed_on_space.owner)
-                        in_selection = False
-                    else:
+                    if (current_player.money - landed_on_space.get_current_price() < 0):
                         print("You don't have enough money to pay.")
+                    else:
+                        print("You paid" + " Player " + str(landed_on_space.owner.id) + " " + str(landed_on_space.get_current_price()) + "$")
+                        current_player.pay(landed_on_space.owner, landed_on_space)
+                        in_selection = False
+                        
                 case "1":
                     print("Mortage properties?")
                 case "2":

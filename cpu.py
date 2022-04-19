@@ -1,8 +1,8 @@
 from player import Player
 class CPU(Player):
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self, color):
+        super().__init__(color)
 
     def play(self, board): 
 
@@ -14,7 +14,7 @@ class CPU(Player):
         # Uses the info from the roll and the new player position to determine the space they landed on.
         landed_on_space = board.space[self.position]
         input("Player " + str(self.id) + " landed on " + landed_on_space.space_name)
-        # Property space type.
+        
         if landed_on_space.IS_BUYABLE and landed_on_space.owner == None:
             self.buy(landed_on_space)
             input("CPU bought " + landed_on_space.space_name)
