@@ -1,12 +1,11 @@
-from tkinter import SINGLE
 from board.board import Board
 from player import Player
 from player import draw_all_players
 from player_interface import *
 from cpu import CPU
-from roll import Roll
-import os
 import pygame
+import random
+from text import Text
 
 class Game():
 
@@ -28,75 +27,52 @@ class Game():
         # Create the fonts that we'll be using.
         pygame.font.init()
         font_test = pygame.font.SysFont('arial', 50)
-        self.welcome_text = font_test.render("Welcome to monopoly!", True, self.BLACK)
+        welcome_text = font_test.render("Welcome to monopoly!", True, self.BLACK)
+        welcome_text = Text('arial', 50, "Welcome to monopoly!", self.BLACK, 0, 0)
 
-        # Creates the starter buttons that will be used during the game.
-        self.singleplayer_button, self.multiplayer_button  = pygame.Rect(20, 60, 70, 40), pygame.Rect(100, 60, 70, 40)
+        self.texts = [welcome_text]
 
         # List of all buttons that are currently on canvas. 
         # Initialized with the two mode buttons as they are 
         # visibile on launch.
-        self.buttons = [self.singleplayer_button, self.multiplayer_button]
+        self.buttons = {"single": pygame.Rect(20, 60, 70, 40), "multi" : pygame.Rect(100, 60, 70, 40)}
 
     def handle_button_logic(self, mouse):
-        for button in self.buttons:
-            is_mouse_over_button = (button.x <= mouse[0] <= button.x + button.width and
+        for button in self.buttons.values():
+            mouse_over_button = (button.x <= mouse[0] <= button.x + button.width and
             button.y <= mouse[1] <= button.y + button.height)
-            if (is_mouse_over_button):
-                if button == self.singleplayer_button:
-                    print("Initializing singleplayer")
-                    self.intialize_singleplayer()
-                if button == self.multiplayer_button:
-                    print("multiplayer")
-                    self.mode = self.MULTIPLAYER
+            if (mouse_over_button):
+                if (button == self.buttons.get("single")):
+                    self.buttons = {"roll" : pygame.Rect(550, 10, 70, 40)}
+                    self.texts = [Text('arial', 50, "Roll to determine game order:", self.BLACK, 0, 0)]
+                if (button == self.buttons.get("multi")):
+                    print("multi")
+                if (button == self.buttons.get("roll")):
+                    self.texts = []
+                    self.buttons = {}
+                    rolls = [random.randint(2, 12) for x in range(4)]
+                    self.players = [x for x, x in sorted(zip(rolls, self.players))]
+                    print(self.players)
+                    self.texts.extend([Text('arial', 25, f"Player 1 rolled: {str(rolls[0])}", self.BLACK, 0, 60), 
+                    Text('arial', 25, f"Player 2 rolled: {str(rolls[1])}", self.BLACK, 200, 60), 
+                    Text('arial', 25, f"Player 3 rolled: {str(rolls[2])}", self.BLACK, 400, 60),
+                    Text('arial', 25, f"Player 4 rolled: {str(rolls[3])}", self.BLACK, 600, 60)])
+
 
     def draw_window(self):
+        
+        # Fill screen with default board image.
         self.WIN.fill((180, 180, 180))
         self.WIN.blit(self.board.IMAGE, (150, 150))
+        # Draw all players
         draw_all_players(self.players, self.WIN)
-        for button in self.buttons:
+        # Draw all buttons
+        for button in self.buttons.values():
             pygame.draw.rect(self.WIN, self.BLACK, button)
-        self.WIN.blit(self.welcome_text, (0, 0))
+        for text in self.texts:
+            text.draw(self.WIN)
+
         pygame.display.update()
-
-
-    def intialize_singleplayer(self):
-        
-        self.buttons = []
-
-        # Player rolls the dice.
-        # roll = Game.Player.roll()
-
-        # Rolls the dice for the other players and gives the values.
-        # roll_2, roll_3, roll_4, = Game.Player_2.roll(), Game.Player_3.roll(), Game.Player_4.roll()
-
-
-        # Determines the order of the game.
-        #order = [roll, roll_2, roll_3, roll_4]
-        # order.sort(key=lambda x: x.value, reverse=True)
-        # order = [order[0].player, order[1].player,
-        #         order[2].player, order[3].player]
-        # del roll, roll_2, roll_3, roll_4
-        # Tells the player the order of the game.
-        # if order[0].id == 1:
-        #     print("You will play first.")
-        # else:
-        #     print("Player " + str(order[0].id) + " will play first.")
-
-        # Turn cycle boolean to track each player.
-        # turn_cycle = True
-
-        #
-        # while turn_cycle:
-        #   for current_player in order:
-        #        print("------------------------------------------")
-        #        if current_player.id == 1:
-        #            enter_selection(current_player, board)
-        #        else:
-        #            print("AI turn.")
-        #             current_player.play(board)
-
-
 
 def main():
     
@@ -109,9 +85,13 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                game.handle_button_logic(mouse)
-                
-            game.draw_window()
+                game.handle_button_logic(mouse)   
+            
+        game.draw_window()
+            
+
+    
+        
 
 main()           
 

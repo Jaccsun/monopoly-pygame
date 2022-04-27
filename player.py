@@ -1,7 +1,6 @@
 import itertools
-from roll import Roll
 import pygame
-
+import random
 
 # Color constants.
 WHITE = (255, 255, 255)
@@ -21,10 +20,6 @@ class Player:
         self.railroads_owned = 0
         self.color = color
         self.rectangle = pygame.Rect(690, 690, 35, 35) 
-
-    def roll(self):
-        roll = Roll(self)
-        return roll
 
     def move(self, roll):
         if(self.position + roll.value >= 40):
