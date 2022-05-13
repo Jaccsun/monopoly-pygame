@@ -1,14 +1,17 @@
+from text import Text
 
 class Monopoly_Space:
 
-    def __init__(self, space_name):
+    def __init__(self, space_name, x, y):
         self.space_name = space_name
         self.IS_BUYABLE = False
+        self.x = x
+        self.y = y
 
 class Monopoly_Utility(Monopoly_Space):
     
-    def __init__(self, space_name):
-        super().__init__(space_name)
+    def __init__(self, space_name, x, y):
+        super().__init__(space_name, x, y)
 
         self.owner = None
         self.current_tier = 0
@@ -20,16 +23,16 @@ class Monopoly_Utility(Monopoly_Space):
     def increase_tier(self): 
         self.current_tier += 1
 
-    def get_prompt(self):
-        return "Would you like to buy this Utility?(y/n):"
+    def get_prompt(self, color):
+        return Text('arial', 25, "Would you like to buy this Utility?(y/n):", color, 0, 20)
 
     def get_current_price(self):
         return self.rent_tiers[self.current_tier]
 
 class Monopoly_Railroad(Monopoly_Space):
     
-    def __init__(self, space_name):
-        super().__init__(space_name)
+    def __init__(self, space_name, x, y):
+        super().__init__(space_name, x, y)
 
         self.owner = None
         self.current_tier = 0
@@ -38,8 +41,8 @@ class Monopoly_Railroad(Monopoly_Space):
         self.rent_tiers = (25, 50, 100, 200)
         self.IS_BUYABLE = True
 
-    def get_prompt(self):
-        return "Would you like to buy this Railroad? (y/n):"
+    def get_prompt(self, color):
+        return Text('arial', 25, "Would you like to buy this Railroad? (y/n):", color, 0, 20)
 
     def get_current_price(self):
         return self.rent_tiers[self.current_tier]
@@ -49,9 +52,9 @@ class Monopoly_Railroad(Monopoly_Space):
 
 class Monopoly_Property(Monopoly_Space):
 
-    def __init__(self, space_name, printed_price, mortgage_value, building_costs, rent_tiers):
+    def __init__(self, space_name, x, y, printed_price, mortgage_value, building_costs, rent_tiers):
 
-        super().__init__(space_name)
+        super().__init__(space_name, x, y)
 
         self.printed_price = printed_price
         self.mortgage_value = mortgage_value
@@ -69,8 +72,8 @@ class Monopoly_Property(Monopoly_Space):
     def increase_tier(self): 
         self.current_tier += 1
 
-    def get_prompt(self):
-        return "Would you like to buy this Property? (y/n):"
+    def get_prompt(self, color):
+        return Text('arial', 25, "Would you like to buy this Property? (y/n):", color, 0, 20)
 
     def give_tier_description(self):
         tier_description = ""
@@ -93,14 +96,14 @@ class Monopoly_Property(Monopoly_Space):
 
 class Monopoly_Community_Chest(Monopoly_Space):
     
-    def __init__(self, space_name):
-        super().__init__(space_name)
+    def __init__(self, space_name, x, y):
+        super().__init__(space_name, x, y)
         self.random = 0
 
 class Monopoly_Chance(Monopoly_Space):
     
-    def __init__(self, space_name):
-        super().__init__(space_name)
+    def __init__(self, space_name, x, y):
+        super().__init__(space_name, x, y)
         self.chance = 0
 
 

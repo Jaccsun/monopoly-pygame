@@ -32,66 +32,7 @@ def enter_selection(current_player, board):
         
         print("Your current cash: " + str(current_player.money) + "$")
 
-def select_roll(current_player, board):
-    player_roll = current_player.roll() 
 
-    # Tells the player what they rolled.
-    input("You rolled a " + str(player_roll.value)) 
-    current_player.move(player_roll)
-
-    # Uses the info from the roll and the new player position to determine the space they landed on.
-    landed_on_space = board.space[current_player.position]
-    print("You landed on " + str(landed_on_space.space_name))
-
-    # Property space type.
-    if landed_on_space.IS_BUYABLE:
-        prompt_buyable_space(landed_on_space, current_player)
-
-# Property prompt system.
-def prompt_buyable_space(landed_on_space, current_player):
-    if (landed_on_space.owner == None):
-        in_prompt = True
-        while(in_prompt):
-            prompt = landed_on_space.get_prompt()
-            property_prompt = input(prompt)
-            if (property_prompt == "y"):
-                if(current_player.money - landed_on_space.printed_price < 0):
-                    print("You don't have enough money to purchase this property.")
-                    in_prompt = False
-                else:
-                    print("You have purchased " +
-                          str(landed_on_space.space_name) + "!")     
-
-                    current_player.buy(landed_on_space)
-                    in_prompt = False
-            elif (property_prompt == "n"):
-                print("You decided not to buy " + str(landed_on_space.space_name))
-                in_prompt = False
-            else:
-                print("Input not understood")
-    elif (landed_on_space.owner == current_player):
-        print("You own this property")
-    else:   
-
-        print("This property is owned by Player " + str(landed_on_space.owner.id))
-        print("Amount owned: " + str(landed_on_space.get_current_price()) + "$")
-        in_selection = True
-        while in_selection:
-            select = input("0 - Pay | 1 - Mortage | 2 - Bankrupt ")
-            match select:
-                case "0":
-                    if (current_player.money - landed_on_space.get_current_price() < 0):
-                        print("You don't have enough money to pay.")
-                    else:
-                        print("You paid" + " Player " + str(landed_on_space.owner.id) + " " + str(landed_on_space.get_current_price()) + "$")
-                        current_player.pay(landed_on_space.owner, landed_on_space)
-                        in_selection = False
-                        
-                case "1":
-                    print("Mortage properties?")
-                case "2":
-                    print("Thanks for playing!")
-                    in_selection = False
 
 
 # Visual property manager to view properties and build.      

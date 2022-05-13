@@ -22,10 +22,10 @@ class Player:
         self.rectangle = pygame.Rect(690, 690, 35, 35) 
 
     def move(self, roll):
-        if(self.position + roll.value >= 40):
-            self.position = (self.position + roll.value) - 40
+        if(self.position + roll >= 40):
+            self.position = (self.position + roll) - 40
         else: 
-            self.position += roll.value
+            self.position += roll
 
     def buy(self, landed_on_space):
         self.money -= landed_on_space.printed_price
