@@ -1,39 +1,4 @@
 
-def enter_selection(current_player, board):
-    in_selection = True
-
-    # Entering selection screen, player can roll,
-    # manage their properties, trade, or forfeit thegame.
-
-    while (in_selection):
-
-        input("-It's your turn-")
-
-        print("Current position: " + str(current_player.position), 
-        "Money: " + str(current_player.money) + "$")
-
-        select = input("0 - Roll | 1 - Property manager | 2 - Trade | 3 - Forfeit ")
-
-        # Rolls the die upon player selection.
-        match select:
-            case "0":
-                select_roll(current_player, board)
-                in_selection = False
-            case "1":
-                select_property_manager(current_player)
-            case "2":
-                select_trade()
-            case "3":
-                print("Thanks for playing.")
-                in_selection = False
-                turn_cycle = False
-            case _:
-                print("Invalid input")
-        
-        print("Your current cash: " + str(current_player.money) + "$")
-
-
-
 
 # Visual property manager to view properties and build.      
 def select_property_manager(current_player):
