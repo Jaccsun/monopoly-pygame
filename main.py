@@ -41,7 +41,7 @@ class Game():
         # List of all buttons that are currently on canvas. 
         # Initialized with the two mode buttons as they are 
         # visibile on launch.
-        self.buttons = [Button("Singleplayer", 20, 60, 70, 40), Button("Multiplayer", 100, 60, 70, 40)]
+        self.buttons = [Button("Start", 20, 40, 120, 40)]
 
 
         # Formatted text of all current player cash.
@@ -62,12 +62,10 @@ class Game():
             button.rect.y <= mouse[1] <= button.rect.y + button.rect.height)
             # condition checks for the type of button that has been pressed.
             if (mouse_over_button):
-                if (button.name == "Singleplayer"):
-                    self.buttons = [Button("roll_order", 550, 10, 70, 40)]
+                if (button.name == "Start"):
+                    self.buttons = [Button("Roll (Order)", 280, 0, 90, 40)]
                     self.texts = [Text("Roll to determine game order:", 0, 0)]
-                if (button.name == "Multiplayer"):
-                    print("multi")
-                if (button.name == "roll_order"):
+                if (button.name == "Roll (Order)"):
                     self.texts = []
                     self.buttons = []
                     rolls = [random.randint(2, 12) for x in range(4)]
@@ -76,8 +74,8 @@ class Game():
                     Text(f"Player 2 rolled: {str(rolls[1])}", 200, 60), 
                     Text(f"Player 3 rolled: {str(rolls[2])}", 400, 60),
                     Text(f"Player 4 rolled: {str(rolls[3])}", 600, 60)])
-                    self.buttons  = [Button("start_game", 600, 0, 70, 40)]
-                if (button.name == "start_game"):
+                    self.buttons  = [Button("Play", 0, 0, 70, 40)]
+                if (button.name == "Play"):
                     self.texts = []
                     self.update_player_text()
                     self.buttons = []
@@ -97,16 +95,9 @@ class Game():
                     self.update_player_text()
                     player_roll = random.randrange(2, 12)
 
-                    # Tells the player what they rolled.
-                    self.player.move(player_roll)
-
-                    # Uses the info from the roll and the new player position to determine the space they landed on.
-                    self.landed_on_space = self.board.space[self.player.position]
+                    self.landed_on_space = self.player.move(player_roll, self.board)
 
                     self.texts.append(Text(f"You rolled a {str(player_roll)} and landed on {self.landed_on_space.space_name}", 0, 0))
-
-                    self.player.rectangle.x = self.landed_on_space.x
-                    self.player.rectangle.y = self.landed_on_space.y 
 
                     # Property space type.
                     if self.landed_on_space.IS_BUYABLE:
@@ -122,10 +113,12 @@ class Game():
                             self.buttons.extend([Button("pay", 0, 50, 70, 40), Button("mortgage", 100, 50, 70, 40), 
                             Button("bankrupt", 200, 50, 70, 40)])
                     elif type(self.landed_on_space) is Monopoly_Chance: 
-                        self.landed_on_space.draw_card()
+                        card_text = self.landed_on_space.draw_card(self.player, self.players, self.board)
+                        self.texts.append(card_text)
                         self.buttons = [Button("next",0, 50, 70, 40)]
                     elif type(self.landed_on_space) is Monopoly_Community_Chest:
-                        self.texts.append(self.landed_on_space.draw_card(self.player))
+                        card_text = self.landed_on_space.draw_card(self.player, self.board, self.players)
+                        self.texts.append(card_text)
                         self.buttons = [Button("next",0, 50, 70, 40)]
                     else:
                         self.texts.append(Text("Not buyable.", 0, 20))
@@ -181,7 +174,7 @@ class Game():
             Button('trade',225, 25, 55, 30)])
         else:
             self.texts.append((Text(f"It's Player {player.id}'s turn! (CPU)", 0, 0)))
-            player.play(self.board, self.owner_rects, self.texts)      
+            player.play(self.board, self.owner_rects, self.texts, self.players)      
             self.buttons = [Button("next",0, 70, 70, 40)]   
 
     def draw_window(self):
@@ -199,10 +192,16 @@ class Game():
             text.draw(self.WIN)
         for rect in self.owner_rects:
             pygame.draw.rect(self.WIN, rect[1], rect[0])
-        increase = -55
+        
+        x = -55
+        seen = []
         for property in self.player.properties:
-            increase += 55
-            self.WIN.blit(property.p_image, (increase, 760))
+            for k in range(len(seen)):
+                if (property.p_image is seen[k][0]):
+                    self.WIN.blit(property.p_image, (seen.get(property.p_image), 760 + 40))
+            x += 55
+            seen.append((property.p_image, x))
+            self.WIN.blit(property.p_image, (x, 760))
         
 
         pygame.display.update()
