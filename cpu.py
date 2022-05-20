@@ -23,7 +23,7 @@ class CPU(Player):
 
         if landed_on_space.IS_BUYABLE:
             if (landed_on_space.owner == None):
-                self.buy(landed_on_space, owner_rects)
+                self.buy(landed_on_space)
                 texts.append(Text(f"CPU bought {landed_on_space.space_name}", 0, 40)) 
             elif (landed_on_space.owner == self):
                 texts.append(Text("CPU owns the property.", 0, 40))

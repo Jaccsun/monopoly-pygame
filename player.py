@@ -43,7 +43,7 @@ class Player:
         self.rectangle.y = s.y 
 
 
-    def buy(self, landed_on_space, owner_rects : list[pygame.rect.Rect]):
+    def buy(self, landed_on_space):
 
 
         self.money -= landed_on_space.printed_price
@@ -70,8 +70,7 @@ class Player:
         else:
             x += 12
             y += 70
-        owner_rects.append((pygame.Rect(x, y, 10, 10), self.color))
-
+        landed_on_space.owner_rect = [pygame.Rect(x, y, 10, 10), self.color]
     def pay(self, player, landed_on_space):
         self.money -= landed_on_space.get_current_price()
         player.money += landed_on_space.get_current_price()

@@ -1,3 +1,4 @@
+from tokenize import String
 from xmlrpc.client import Boolean, boolean
 import pygame
 import os
@@ -27,19 +28,33 @@ class Monopoly_Space:
         self.x = x
         self.y = y
 
-class Monopoly_Utility(Monopoly_Space):
-    
-    def __init__(self, space_name : str, x : int, y : int, p_image : pygame.Surface):
+class Monopoly_Card:
+    def __init__(self, card_image, card_image_str):
+
+        self.image = pygame.transform.scale(card_image, (50, 70))
+        self.image_str = card_image_str
+        self.rect = self.image.get_rect()
+
+    def draw(self, WIN):
+        WIN.blit(self.image, self.rect)
+
+class Monopoly_Ownable(Monopoly_Space):
+    def __init__(self, space_name : str, x : int, y : int, card_image : pygame.Surface, card_image_str : str):
         super().__init__(space_name, x, y)
 
         self.owner = None
         self.current_tier = 0
+        self.IS_BUYABLE = True
+        self.card = Monopoly_Card(card_image, card_image_str)
+        self.owner_rect = None
+
+class Monopoly_Utility(Monopoly_Ownable):
+    
+    def __init__(self, space_name : str, x : int, y : int, p_image : pygame.Surface, p_image_str : str):
+        super().__init__(space_name, x, y, p_image, p_image_str)
         self.printed_price = 200
         self.mortgage_value = 75
         self.rent_tiers = (0, 1)
-        self.IS_BUYABLE = True
-
-        self.p_image = pygame.transform.scale(p_image, (50, 70))
 
     def increase_tier(self): 
         self.current_tier += 1
@@ -50,19 +65,14 @@ class Monopoly_Utility(Monopoly_Space):
     def get_current_price(self):
         return self.rent_tiers[self.current_tier]
 
-class Monopoly_Railroad(Monopoly_Space):
+class Monopoly_Railroad(Monopoly_Ownable):
     
-    def __init__(self, space_name : str, x : int, y : int, p_image : pygame.Surface):
-        super().__init__(space_name, x, y)
+    def __init__(self, space_name : str, x : int, y : int, p_image : pygame.Surface, p_image_str : str):
+        super().__init__(space_name, x, y, p_image, p_image_str)
 
-        self.owner = None
-        self.current_tier = 0
         self.printed_price = 200
         self.mortgage_value = 100
         self.rent_tiers = (25, 50, 100, 200)
-        self.IS_BUYABLE = True
-
-        self.p_image = pygame.transform.scale(p_image, (50, 70))
 
     def get_prompt(self):
         return Text("Would you like to buy this Railroad? (y/n):", 0, 20)
@@ -73,22 +83,18 @@ class Monopoly_Railroad(Monopoly_Space):
     def increase_tier(self): 
         self.current_tier += 1
 
-class Monopoly_Property(Monopoly_Space):
+class Monopoly_Property(Monopoly_Ownable):
 
-    def __init__(self, space_name : str, x : int, y : int, printed_price : int, mortgage_value : int, building_costs : int, rent_tiers : list[int], p_image : pygame.Surface):
+    def __init__(self, space_name : str, x : int, y : int, printed_price : int, mortgage_value : int, 
+    building_costs : int, rent_tiers : list[int], p_image : pygame.Surface, p_image_str : str):
 
-        super().__init__(space_name, x, y)
+        super().__init__(space_name, x, y, p_image, p_image_str)
 
         self.printed_price = printed_price
         self.mortgage_value = mortgage_value
-        self.building_costs = building_costs
         self.rent_tiers = rent_tiers
 
-        self.owner = None
-        self.current_tier = 0
-        self.IS_BUYABLE = True
-
-        self.p_image = pygame.transform.scale(p_image, (50, 70))
+        self.building_costs = building_costs
     
 
     def get_current_price(self):
@@ -149,7 +155,7 @@ class Monopoly_Community_Chest(Monopoly_Space):
             case 8:
                 for p in players:
                     if p is not player:
-                        p -= 50
+                        p.money -= 50
                 player.money += 50
                 return Text("Grand Opera Night. Collect $50 from every player for opening night seats.", y=y)
             case 9:
@@ -161,7 +167,7 @@ class Monopoly_Community_Chest(Monopoly_Space):
             case 11:
                 for p in players:
                     if p is not player:
-                        p -= 10
+                        p.money -= 10
                 player.money += 10
                 return Text("It is your birthday. Collect $10 from every player.", y=y) 
             case 12:
@@ -287,7 +293,7 @@ class Monopoly_Chance(Monopoly_Space):
             case 13:
                 for p in players:
                     if p is not player:
-                        p += 50
+                        p.money += 50
                 player.money -= 10
                 return Text("You have been elected Chairman of the Board. Pay each player $50.", y=y)
             case 14:
