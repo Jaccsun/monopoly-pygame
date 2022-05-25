@@ -34,6 +34,7 @@ class Game():
         self.owner_rects = []      
         # keeps track of the current turn in the game loop
         self.currentTurn = 0 
+        # Set caption of the pygame
         pygame.display.set_caption("Monopoly")
         # Create pygame clock.
         self.clock = pygame.time.Clock()
@@ -46,23 +47,28 @@ class Game():
         # visibile on launch.
         self.buttons = [Button("Start", 20, 40, 120, 40)]
 
+        # Boolean to tell the game if in menu
+        self.in_manager = False
 
-        # Trade Stuff
-        self.trade_list = []
+        # Current trade tracker
         self.current_trade = 1
+        # Trade recipent on other end of window.
+        self.trade_recipient = self.PLAYER_LIST[self.current_trade]
+        # Trade list of two players involved in trade.
+        self.trade_list = []
 
         # Exchange windows
         self.money_exchange = []
         self.property_exchange = [[],[]]
 
+        # Property Manager
+        self.selected_property = None
+
+        # Visual representation of trade windows
         self.window_1, self.window_2 = pygame.Rect(20, 200, 400, 400), pygame.Rect(450, 200, 400, 400)
 
         # Formatted text of all current player cash.
-        self.CASH_TEXT_X_POS = 700
-        self.player_cash_texts = [Text(f"Your Cash:      ${str(self.player.money)}", self.CASH_TEXT_X_POS, 0), 
-        Text(f"Player 2 Cash: ${str(self.player_2.money)}", self.CASH_TEXT_X_POS, 20),
-        Text(f"Player 3 Cash: ${str(self.player_3.money)}", self.CASH_TEXT_X_POS, 40),
-        Text(f"Player 4 Cash: ${str(self.player_4.money)}", self.CASH_TEXT_X_POS, 60)]
+        self.player_cash_texts = None
 
         # Tracker variable to get information about the current space a player has landed on.
         self.landed_on_space = None
@@ -71,8 +77,10 @@ class Game():
         # loops through each current button and checks if they've been pressed
         for button in self.buttons:
             # boolean variable to determine if a mouse is over a button
-            mouse_over_button = (button.rect.x <= mouse[0] <= button.rect.x + button.rect.width and
-            button.rect.y <= mouse[1] <= button.rect.y + button.rect.height)
+            mouse_over_button = (button.rect.x <= mouse[0] 
+            <= button.rect.x + button.rect.width and
+            button.rect.y <= mouse[1] <= button.rect.y 
+            + button.rect.height)
             # condition checks for the type of button that has been pressed.
             if (mouse_over_button):
                 if (button.name == "Start"):
@@ -82,8 +90,10 @@ class Game():
                     self.texts = []
                     self.buttons = []
                     rolls = [random.randint(2, 12) for x in range(4)]
-                    self.players = [x[1] for x in sorted(zip(rolls, self.players), key= lambda test: test[0], reverse=True)]
-                    self.texts.extend([Text(f"Player 1 rolled: {str(rolls[0])}", 0, 60), 
+                    self.players = [x[1] for x in sorted(zip(rolls, self.players),
+                    key= lambda test: test[0], reverse=True)]
+                    self.texts.extend([Text(f"Player 1 "
+                    f"rolled: {str(rolls[0])}", 0, 60), 
                     Text(f"Player 2 rolled: {str(rolls[1])}", 200, 60), 
                     Text(f"Player 3 rolled: {str(rolls[2])}", 400, 60),
                     Text(f"Player 4 rolled: {str(rolls[3])}", 600, 60)])
@@ -110,21 +120,35 @@ class Game():
 
                     self.landed_on_space = self.player.move(player_roll, self.board)
 
-                    self.texts.append(Text(f"You rolled a {str(player_roll)} and landed on {self.landed_on_space.space_name}", 0, 0))
+                    self.texts.append(Text(f"You rolled a {str(player_roll)}"
+                    f" and landed on {self.landed_on_space.space_name}", 0, 0))
 
                     # Property space type.
                     if self.landed_on_space.IS_BUYABLE:
                         if (self.landed_on_space.owner == None):
                             self.texts.append(self.landed_on_space.get_prompt())
-                            self.buttons.extend([Button('buy', 0, 50, 70, 40), Button('d_buy', 100, 50, 70, 40)])
+                            self.buttons.extend([Button('Buy', 0, 50, 70, 40), 
+                            Button("Don't Buy", 100, 50, 70, 40)])
                         elif (self.landed_on_space.owner == self.player):
                             self.texts.append(Text("You own this property.", 0, 20))
                             self.buttons = [Button("next",0, 50, 70, 40)]
                         else:   
-                            self.texts.extend([Text(f"This property is owned by Player {str(self.landed_on_space.owner.id)}", 0, 100),
-                            Text(f"Amount owned: {str(self.landed_on_space.get_current_price())}$", 350, 100)])
-                            self.buttons.extend([Button("pay", 0, 50, 70, 40), Button("mortgage", 100, 50, 70, 40), 
-                            Button("bankrupt", 200, 50, 70, 40)])
+
+                            self.texts.append(Text(f"This property is owned by Player"
+                            f"{str(self.landed_on_space.owner.id)}", 0, 100))
+
+                            if self.landed_on_space.current_tier > -1:
+                                self.texts.append(Text(f"Amount owned: "
+                                f"{str(self.landed_on_space.get_current_price())}$", 350, 100))
+                                self.buttons.extend([Button("pay", 0, 50, 70, 40), 
+                                Button("mortgage", 100, 50, 70, 40), 
+                                Button("bankrupt", 200, 50, 70, 40)])
+                            else:
+                                self.texts.append(Text(f"Property is mortagaged"),350, 100)
+                                self.buttons = [Button("next", 0, 50, 70, 40)]
+
+                            
+
                     elif type(self.landed_on_space) is Monopoly_Chance: 
                         card_text = self.landed_on_space.draw_card(self.player, self.players, self.board)
                         self.texts.append(card_text)
@@ -138,22 +162,25 @@ class Game():
                         self.buttons = [Button("next",0, 50, 70, 40)]
 
                 # buy button for newly-unowned properties     
-                if (button.name == "buy"):
+                if (button.name == "Buy"):
                     self.buttons = []
                     self.texts = []
                     if(self.player.money - self.landed_on_space.printed_price < 0):
-                        self.texts.append(Text("You don't have enough money to purchase this property.", 0, 20))
+                        self.texts.append(Text("You don't have enough money "
+                        f"to purchase this property.", 0, 20))
                     else: 
-                        self.texts.append(Text(f"You have purchased {str(self.landed_on_space.space_name)}!", 0, 20))
+                        self.texts.append(Text(f"You have purchased "
+                        f"{str(self.landed_on_space.space_name)}!", 0, 20))
                         self.player.buy(self.landed_on_space)
                     self.update_player_text()
                     self.buttons = [Button("next",0, 50, 70, 40)]
                     
                 # dont buy property 
-                if (button.name == "d_buy"): 
+                if (button.name == "Don't Buy"): 
                     self.buttons = []
                     self.texts = []
-                    self.texts.extend([Text(f"You decided not to buy {str(self.landed_on_space.space_name)}", 0, 20)],
+                    self.texts.extend([Text(f"You decided not to buy"
+                    f" {str(self.landed_on_space.space_name)}", 0, 20)],
                     self.player_cash_texts)
                     self.buttons = [Button("next",0, 50, 70, 40)]
                 # pay player if landed on their property
@@ -162,15 +189,11 @@ class Game():
                     if (self.player.money - self.landed_on_space.get_current_price() < 0):
                         self.texts.append(Text("You don't have enough money to pay.", 0, 0))
                     else:
-                        self.texts.append(Text(f"You paid Player {str(self.landed_on_space.owner.id)} {str(self.landed_on_space.get_current_price())}$", 
-                        0, 0))
+                        self.texts.append(Text(f"You paid Player {str(self.landed_on_space.owner.id)} "
+                        f"{str(self.landed_on_space.get_current_price())}$", 0, 0))
                         self.player.pay(self.landed_on_space.owner, self.landed_on_space)
                     self.buttons = [Button("next",0, 50, 70, 40)]
                     self.update_player_text()
-                # mortgage properties button
-                if (button.name == "mortgage"):
-                    print("Mortage properties?")
-                    self.buttons = [Button("next",0, 50, 70, 40)]
                 # bankrupt properties button
                 if (button.name == "bankrupt"):
                     print("Thanks for playing!")
@@ -212,13 +235,17 @@ class Game():
                 
                     self.update_trade_text()
                 if (button.name == "Back"):
-                    self.trade_list[0].properties.extend(self.property_exchange[0])
-                    self.trade_list[1].properties.extend(self.property_exchange[1])
-                    self.property_exchange = [[],[]]
+                    if self.in_manager:
+                        self.in_manager = False
+                    else:
+                        self.trade_list[0].properties.extend(self.property_exchange[0])
+                        self.trade_list[1].properties.extend(self.property_exchange[1])
+                        self.property_exchange = [[],[]]
+                        self.trade_list = []
+                    
                     self.texts = []
                     self.buttons = []
                     self.show_board = True
-                    self.trade_list = []
                     self.update_player_text()
                     self.texts.append(Text(f"It's your turn!", 0, 0))
                     self.buttons.extend([Button('Roll', 0, 25, 40, 30), Button("Property Manager",50, 25, 165, 30), 
@@ -253,7 +280,48 @@ class Game():
                     player_2.money += self.money_exchange[0]    
 
                     self.money_exchange = [0, 0]
-                    self.update_trade_text() 
+                    self.update_trade_text()
+                
+                if (button.name == "Property Manager"):
+                    self.texts = []
+                    self.buttons = []
+                    self.update_player_text()
+                    self.buttons.append(Button("Back", 0, 0, 40, 40))
+                    self.show_board = False
+                    self.in_manager = True
+                if (button.name == "Build"):
+                    if ((self.player.money - self.selected_property.building_costs) >= 0 
+                    and self.selected_property.current_tier != 6):
+                        self.selected_property.increase_tier() 
+                        self.player.money -= self.selected_property.building_costs 
+                        self.texts = []
+                        self.buttons = []
+                        self.update_player_text()
+                        self.buttons.append(Button("Back", 0, 0, 40, 40))
+                        self.selected_property.add_property_text(self.texts, self.buttons, self.player)
+                if (button.name == "Sell"):
+                    if self.selected_property.current_tier >= 2:
+                        self.selected_property.current_tier -= 1
+                        self.player.money += self.selected_property.building_costs 
+                        self.texts = []
+                        self.buttons = []
+                        self.update_player_text()
+                        self.buttons.append(Button("Back", 0, 0, 40, 40))
+                        self.selected_property.add_property_text(self.texts, self.buttons, self.player)
+                if (button.name == "Mortgage"):
+                    self.selected_property.mortgage(self.player)
+                    self.texts = []
+                    self.buttons = []
+                    self.selected_property.add_property_text(self.texts, self.buttons, self.player)
+                    self.buttons.append(Button("Back", 0, 0, 40, 40))
+                    self.update_player_text()
+                if (button.name == "Lift Mortgage"):
+                    self.selected_property.unmortgage(self.player)
+                    self.texts = []
+                    self.buttons = []
+                    self.buttons.append(Button("Back", 0, 0, 40, 40))
+                    self.selected_property.add_property_text(self.texts, self.buttons, self.player)
+                    self.update_player_text()
 
 
                 
@@ -264,29 +332,35 @@ class Game():
             self.texts = []
             self.update_player_text()
             self.texts.append(Text(f"It's your turn!", 0, 0))
-            self.buttons.extend([Button('Roll', 0, 25, 40, 30), Button('p_manage',50, 25, 165, 30), 
+            self.buttons.extend([Button('Roll', 0, 25, 40, 30), Button('Property Manager',50, 25, 165, 30), 
             Button('Trade',225, 25, 55, 30)])
         else:
             self.texts.append((Text(f"It's Player {player.id}'s turn! (CPU)", 0, 0)))
-            player.play(self.board, self.owner_rects, self.texts, self.players)      
+            player.play(self.board, self.texts, self.players)      
             self.buttons = [Button("next",0, 70, 70, 40)]   
 
     def update_player_text(self):
-        self.player_cash_texts = [Text(f"Your Cash:      ${str(self.player.money)}", self.CASH_TEXT_X_POS, 0), 
-        Text(f"Player 2 Cash: ${str(self.player_2.money)}", self.CASH_TEXT_X_POS, 20),
-        Text(f"Player 3 Cash: ${str(self.player_3.money)}", self.CASH_TEXT_X_POS, 40),
-        Text(f"Player 4 Cash: ${str(self.player_4.money)}", self.CASH_TEXT_X_POS, 60)]
+        self.CASH_TEXT_X_POS = 700
+        self.player_cash_texts = [Text(f"Your Cash:       "      
+        f"${str(self.player.money)}", self.CASH_TEXT_X_POS, 0), 
+        Text(f"Player 2 Cash: ${str(self.player_2.money)}", 
+        self.CASH_TEXT_X_POS, 20),
+        Text(f"Player 3 Cash: ${str(self.player_3.money)}", 
+        self.CASH_TEXT_X_POS, 40),
+        Text(f"Player 4 Cash: ${str(self.player_4.money)}", 
+        self.CASH_TEXT_X_POS, 60)]
         self.texts.extend(self.player_cash_texts)
 
     def update_trade_text(self):
         self.texts = []
         player = self.PLAYER_LIST[self.current_trade]
         self.texts.extend([Text(f"You (Current cash: ${self.player.money})", 50, 0),
-                    Text(f"Player {str(player.id)} (Current cash: ${player.money})", 450, 0),
-                    Text(f"Cash: ${str(self.money_exchange[0])}", 20, 600),
-                    Text(f"Cash: ${str(self.money_exchange[1])}", 450, 600)])
+        Text(f"Player {str(player.id)} (Current cash: ${player.money})", 450, 0),
+        Text(f"Cash: ${str(self.money_exchange[0])}", 20, 600),
+        Text(f"Cash: ${str(self.money_exchange[1])}", 450, 600)])
         
-    def handle_click_card(self, mouse):
+    def handle_click_card(self, mouse):        
+        
         i = 0
         done = False
         for property_list in self.property_exchange:
@@ -321,14 +395,30 @@ class Game():
                             self.trade_list[1].properties.remove(p)
                     i += 1
 
+    # Handle clicking on cards during property management.             
+    def handle_click_definition(self, mouse):
+        
+        for prop in self.player.properties:
+            card_rect = prop.card.rect
+            mouse_over_card = (card_rect.x <= mouse[0] <= card_rect.x + card_rect.width and
+            card_rect.y <= mouse[1] <= card_rect.y + card_rect.height)
+            if mouse_over_card:
+                self.texts = []
+                self.buttons = []
+                self.update_player_text()
+                self.buttons.append(Button("Back", 0, 0, 40, 40))
+                self.selected_property = prop
+                prop.add_property_text(self.texts, self.buttons, self.player)
 
-    def draw_properties(self, properties : list[Property], base_x : int, base_y : int, edge_case=True, player=None):
+
+    def draw_properties(self, properties : list[Property], base_x : int,
+     base_y : int, edge_case=True, player=None, no_stack=None):
         seen = []
         for property in properties:
             card = property.card 
             image_str = card.image_str
             
-            if image_str in seen:
+            if image_str in seen and not no_stack:
                 old_x = seen[seen.index(image_str) + 1]
                 multiplier = seen[seen.index(image_str) + 2]
                 multiplier += 1
@@ -355,16 +445,22 @@ class Game():
         
         # Fill screen with default board image.
         self.WIN.fill((180, 180, 180))      
-              
-        if self.trade_list:
-            
-            self.draw_properties(self.trade_list[0].properties, 0, 40, edge_case=False)
-            self.draw_properties(self.trade_list[1].properties, 400, 40, edge_case=False)
+
+             
+        if self.trade_list:          
+            self.draw_properties(self.trade_list[0].properties, 
+            0, 40, edge_case=False)
+            self.draw_properties(self.trade_list[1].properties, 
+            400, 40, edge_case=False)
             pygame.draw.rect(self.WIN, (80, 80, 80), self.window_1)
             pygame.draw.rect(self.WIN, (80, 80, 80), self.window_2)
-            self.draw_properties(self.property_exchange[0], -20, 200)
-            self.draw_properties(self.property_exchange[1], 400, 200)
+            self.draw_properties(self.property_exchange[0], 
+            -20, 200)
+            self.draw_properties(self.property_exchange[1],
+             400, 200)
             
+        if self.in_manager:
+            self.draw_properties(self.player.properties, -10, 5, edge_case=False, no_stack=True) 
         # Draw all buttons
         for button in self.buttons:
             pygame.draw.rect(self.WIN, self.BLACK, button.rect)
@@ -374,14 +470,20 @@ class Game():
         if self.show_board:
             self.WIN.blit(self.board.IMAGE, (150, 150))
             draw_all_players(self.players, self.WIN)
-            self.draw_properties(self.player.properties, -55, 760, player=self.player)
-            self.draw_properties(self.player_2.properties, -55, 200, player=self.player_2)
-            self.draw_properties(self.player_3.properties, 700, 200, player=self.player_3) 
-            self.draw_properties(self.player_4.properties, 400, 760, player=self.player_4)  
+            self.draw_properties(self.player.properties,
+             -55, 760, True, self.player)
+            self.draw_properties(self.player_2.properties,
+             -55, 200, player=self.player_2)
+            self.draw_properties(self.player_3.properties,
+             700, 200, player=self.player_3) 
+            self.draw_properties(self.player_4.properties,
+             400, 760, True, self.player_4)  
             for player in self.PLAYER_LIST:
                 for p in player.properties:
                     rect = p.owner_rect 
                     pygame.draw.rect(self.WIN, rect[1], rect[0])
+                    if type(p) is Monopoly_Property and p.current_tier >= 2:
+                        p.draw_houses(self.WIN)
 
         pygame.display.update()
 
@@ -397,8 +499,41 @@ def main():
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 game.handle_button_logic(mouse)  
-                if game.show_board is False:
+                
+                if game.in_manager:
+                    game.handle_click_definition(mouse)
+                elif game.show_board is False:
                     game.handle_click_card(mouse)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_k:
+                    game.player.money += 400
+                    game.texts = []
+                    game.update_player_text()
+                if event.key == pygame.K_p:
+                    game.player.buy(game.board.space[1])
+                    game.player.buy(game.board.space[3])
+                    game.player.buy(game.board.space[6])
+                    game.player.buy(game.board.space[8])
+                    game.player.buy(game.board.space[9])
+                    game.player.buy(game.board.space[11])
+                    game.player.buy(game.board.space[13])
+                    game.player.buy(game.board.space[14])
+                    game.player.buy(game.board.space[16])
+                    game.player.buy(game.board.space[18])
+                    game.player.buy(game.board.space[19])
+                    game.player.buy(game.board.space[21])
+                    game.player.buy(game.board.space[23])
+                    game.player.buy(game.board.space[24])
+                    game.player.buy(game.board.space[26])
+                    game.player.buy(game.board.space[27])
+                    game.player.buy(game.board.space[29])
+                    game.player.buy(game.board.space[31])
+                    game.player.buy(game.board.space[32])
+                    game.player.buy(game.board.space[34])
+                    game.player.buy(game.board.space[37])
+                    game.player.buy(game.board.space[39])
+                    for p in game.player.properties:
+                        p.current_tier = 3
 
         game.draw_window()
             

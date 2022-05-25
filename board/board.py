@@ -49,11 +49,11 @@ class Board:
 
         # PINK
 
-        ST_CHARLES_PLACE = Monopoly_Property("St Charles Place (Pink)", LEFT_X, 629,
+        ST_CHARLES_PLACE = Monopoly_Property("St Charles Place (Pink)", LEFT_X, 626,
         140, 70, 100, (10, 20, 50, 150, 450, 625, 750), PINK_P, "PINK_P")
         STATES_AVENUE = Monopoly_Property("States Avenue (Pink)", LEFT_X, 528,
         140, 70, 100, (10, 20, 50, 150, 450, 625, 750), PINK_P, "PINK_P")
-        VIRGINIA_AVENUE = Monopoly_Property("Virginia Avenue (Pink)", LEFT_X, 483,
+        VIRGINIA_AVENUE = Monopoly_Property("Virginia Avenue (Pink)", LEFT_X, 478,
         160, 80, 100, (12, 24, 60, 180, 500, 700, 900), PINK_P, "PINK_P")
 
         #ORANGE
@@ -67,11 +67,11 @@ class Board:
 
         # RED
 
-        KENTUCKY_AVENUE = Monopoly_Property("Kentucky Avenue (Red)", 234, TOP_Y,
+        KENTUCKY_AVENUE = Monopoly_Property("Kentucky Avenue (Red)", 236, TOP_Y,
         220, 110, 150, (18, 36, 90, 250, 700, 875, 1050), RED_P, "RED_P")
         INDIANA_AVENUE = Monopoly_Property("Indiana Avenue (Red)", 335, TOP_Y,
         220, 110, 150, (18, 36, 90, 250, 700, 875, 1050), RED_P, "RED_P")
-        ILLINOIS_AVENUE = Monopoly_Property("Illinois Avenue (Red)", 382, TOP_Y,
+        ILLINOIS_AVENUE = Monopoly_Property("Illinois Avenue (Red)", 385, TOP_Y,
         240, 120, 150, (20, 40, 100, 300, 750, 925, 1100), RED_P, "RED_P")
 
         # YELLOW
@@ -80,7 +80,7 @@ class Board:
         260, 130, 150, (22, 44, 110, 330, 800, 975, 1150), YELLOW_P, "YELLOW_P")
         VENTNOR_AVENUE = Monopoly_Property("Ventnor Avenue (Yellow)", 530, TOP_Y,
         260, 130, 150, (22, 44, 110, 330, 800, 975, 1150), YELLOW_P, "YELLOW_P")
-        MARVIN_GARDENS = Monopoly_Property("Marvin Gardens (Yellow)", 625, TOP_Y ,
+        MARVIN_GARDENS = Monopoly_Property("Marvin Gardens (Yellow)", 630, TOP_Y ,
         280, 140, 150, (24, 28, 120, 360, 850, 1025, 1200), YELLOW_P, "YELLOW_P")
 
         # GREEN
@@ -94,9 +94,9 @@ class Board:
 
         # DARK BLUE
 
-        PARK_PLACE = Monopoly_Property("Park Place (Blue)", RIGHT_X, 533,
+        PARK_PLACE = Monopoly_Property("Park Place (Blue)", RIGHT_X, 528,
         350, 175, 200, (35, 70, 175, 500, 1100, 1300, 1500), BLUE_P, "BLUE_P")
-        BOARDWALK = Monopoly_Property("Boardwalk (Blue)", RIGHT_X, 629,
+        BOARDWALK = Monopoly_Property("Boardwalk (Blue)", RIGHT_X, 624,
         400, 200, 200, (50, 100, 200, 600, 1400, 1700, 2000), BLUE_P, "BLUE_P")
 
         # STATIONS

@@ -19,6 +19,7 @@ class Player:
         self.position = 0
         self.money = 1500
         self.properties = []
+        self.monopolies = []
         self.railroads_owned = 0
         self.color = color
         self.rectangle = pygame.Rect(690, 690, 35, 35) 
@@ -44,7 +45,6 @@ class Player:
 
 
     def buy(self, landed_on_space):
-
 
         self.money -= landed_on_space.printed_price
         self.properties.append(landed_on_space)
