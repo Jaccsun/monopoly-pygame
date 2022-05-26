@@ -16,6 +16,7 @@ class Board:
         self.IMAGE = pygame.image.load(os.path.join('Assets', 'board.jpg'))
 
         GO = Monopoly_Space("GO", 690, 690)
+        self.JAIL = Monopoly_Space("Jail", 185, 685)
 
         COMMUNITY_CHEST_1 = Monopoly_Community_Chest("Community Chest", 580, BOTTOM_Y)
         COMMUNITY_CHEST_2 = Monopoly_Community_Chest("Community Chest", LEFT_X, 331)

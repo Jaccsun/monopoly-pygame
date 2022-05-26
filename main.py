@@ -1,7 +1,6 @@
-from msilib.schema import Property
-from unittest import skip
 from board.board import Board
-from board.space import Monopoly_Chance, Monopoly_Community_Chest, Monopoly_Property
+from board.space import *
+import os
 from player import Player
 from player import draw_all_players
 from cpu import CPU
@@ -16,6 +15,7 @@ class Game():
         # Color constants.
         self.WHITE, self.BLUE, self.BLACK, self.RED, self.GREEN, self.PURPLE, self.GREY  = ((255, 255, 255), 
         (0, 0, 255), (0, 0, 0), (255, 0, 0), (0, 255, 0), (255, 0, 255), (200, 200, 200))
+        
         # Window constants.
         WIDTH, HEIGHT = 900, 900
         self.FPS = 60
@@ -24,8 +24,14 @@ class Game():
         # Creates the board and player objects.
         self.board = Board()
         self.show_board = True
+        PIECE_SCALE = (45, 45)
+        HAT = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'hat.png')), PIECE_SCALE)
+        BATTLESHIP = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'battleship.png')), PIECE_SCALE)
+        CAR = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'car.png')), PIECE_SCALE)
+        BOOT = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'boot.png')), PIECE_SCALE)
          # Store the players in a special variables so we can modify them more easily.
-        self.player, self.player_2, self.player_3, self.player_4 = Player(self.RED), CPU(self.BLUE), CPU(self.GREEN), CPU(self.PURPLE)
+        self.player, self.player_2 = Player(self.RED, HAT), CPU(self.BLUE, BATTLESHIP)
+        self.player_3, self.player_4 = CPU(self.GREEN, CAR), CPU(self.PURPLE, BOOT)
         # Put the other player in a list.
         self.players = [self.player, self.player_2, self.player_3, self.player_4]
         # List of players that will be untouched
@@ -87,8 +93,8 @@ class Game():
                     self.buttons = [Button("Roll (Order)", 280, 0, 90, 40)]
                     self.texts = [Text("Roll to determine game order:", 0, 0)]
                 if (button.name == "Roll (Order)"):
-                    self.texts = []
-                    self.buttons = []
+                    self.texts.clear()
+                    self.buttons.clear()
                     rolls = [random.randint(2, 12) for x in range(4)]
                     self.players = [x[1] for x in sorted(zip(rolls, self.players),
                     key= lambda test: test[0], reverse=True)]
@@ -99,72 +105,27 @@ class Game():
                     Text(f"Player 4 rolled: {str(rolls[3])}", 600, 60)])
                     self.buttons  = [Button("Play", 0, 0, 70, 40)]
                 if (button.name == "Play"):
-                    self.texts = []
+                    self.texts.clear()
+                    self.buttons.clear()
                     self.update_player_text()
-                    self.buttons = []
                     self.handle_turn()
                 if (button.name == "next"):
                     if self.currentTurn == 3:
                         self.currentTurn = 0
                     else:
                         self.currentTurn += 1
-                    self.texts = []
+                    self.texts.clear()
+                    self.buttons.clear()
                     self.update_player_text()
-                    self.buttons = []
                     self.handle_turn()
+                # Handles a roll
                 if (button.name == "Roll"):
-                    self.buttons = []
-                    self.texts = []
+                    self.player.roll(self)
                     self.update_player_text()
-                    player_roll = random.randrange(2, 12)
-
-                    self.landed_on_space = self.player.move(player_roll, self.board)
-
-                    self.texts.append(Text(f"You rolled a {str(player_roll)}"
-                    f" and landed on {self.landed_on_space.space_name}", 0, 0))
-
-                    # Property space type.
-                    if self.landed_on_space.IS_BUYABLE:
-                        if (self.landed_on_space.owner == None):
-                            self.texts.append(self.landed_on_space.get_prompt())
-                            self.buttons.extend([Button('Buy', 0, 50, 70, 40), 
-                            Button("Don't Buy", 100, 50, 70, 40)])
-                        elif (self.landed_on_space.owner == self.player):
-                            self.texts.append(Text("You own this property.", 0, 20))
-                            self.buttons = [Button("next",0, 50, 70, 40)]
-                        else:   
-
-                            self.texts.append(Text(f"This property is owned by Player"
-                            f"{str(self.landed_on_space.owner.id)}", 0, 100))
-
-                            if self.landed_on_space.current_tier > -1:
-                                self.texts.append(Text(f"Amount owned: "
-                                f"{str(self.landed_on_space.get_current_price())}$", 350, 100))
-                                self.buttons.extend([Button("pay", 0, 50, 70, 40), 
-                                Button("mortgage", 100, 50, 70, 40), 
-                                Button("bankrupt", 200, 50, 70, 40)])
-                            else:
-                                self.texts.append(Text(f"Property is mortagaged"),350, 100)
-                                self.buttons = [Button("next", 0, 50, 70, 40)]
-
-                            
-
-                    elif type(self.landed_on_space) is Monopoly_Chance: 
-                        card_text = self.landed_on_space.draw_card(self.player, self.players, self.board)
-                        self.texts.append(card_text)
-                        self.buttons = [Button("next",0, 50, 70, 40)]
-                    elif type(self.landed_on_space) is Monopoly_Community_Chest:
-                        card_text = self.landed_on_space.draw_card(self.player, self.players, self.board)
-                        self.texts.append(card_text)
-                        self.buttons = [Button("next",0, 50, 70, 40)]
-                    else:
-                        self.texts.append(Text("Not buyable.", 0, 20))
-                        self.buttons = [Button("next",0, 50, 70, 40)]
-
                 # buy button for newly-unowned properties     
                 if (button.name == "Buy"):
-                    self.buttons = []
-                    self.texts = []
+                    self.buttons.clear()
+                    self.texts.clear()
                     if(self.player.money - self.landed_on_space.printed_price < 0):
                         self.texts.append(Text("You don't have enough money "
                         f"to purchase this property.", 0, 20))
@@ -173,7 +134,8 @@ class Game():
                         f"{str(self.landed_on_space.space_name)}!", 0, 20))
                         self.player.buy(self.landed_on_space)
                     self.update_player_text()
-                    self.buttons = [Button("next",0, 50, 70, 40)]
+                    self.buttons.clear()
+                    self.buttons.append(Button("next",0, 50, 70, 40))
                     
                 # dont buy property 
                 if (button.name == "Don't Buy"): 
@@ -184,18 +146,10 @@ class Game():
                     self.player_cash_texts)
                     self.buttons = [Button("next",0, 50, 70, 40)]
                 # pay player if landed on their property
-                if (button.name == "pay"):
-                    self.texts = []
-                    if (self.player.money - self.landed_on_space.get_current_price() < 0):
-                        self.texts.append(Text("You don't have enough money to pay.", 0, 0))
-                    else:
-                        self.texts.append(Text(f"You paid Player {str(self.landed_on_space.owner.id)} "
-                        f"{str(self.landed_on_space.get_current_price())}$", 0, 0))
-                        self.player.pay(self.landed_on_space.owner, self.landed_on_space)
-                    self.buttons = [Button("next",0, 50, 70, 40)]
-                    self.update_player_text()
+                if (button.name == "Pay"):
+                    self.player.pay(self)
                 # bankrupt properties button
-                if (button.name == "bankrupt"):
+                if (button.name == "Bankrupt"):
                     print("Thanks for playing!")
                     self.buttons = [Button("next",0, 50, 70, 40)]
                 if (button.name == "Trade"):
@@ -309,19 +263,24 @@ class Game():
                         self.buttons.append(Button("Back", 0, 0, 40, 40))
                         self.selected_property.add_property_text(self.texts, self.buttons, self.player)
                 if (button.name == "Mortgage"):
-                    self.selected_property.mortgage(self.player)
+                    self.player.mortgage(self.selected_property)
                     self.texts = []
                     self.buttons = []
                     self.selected_property.add_property_text(self.texts, self.buttons, self.player)
                     self.buttons.append(Button("Back", 0, 0, 40, 40))
                     self.update_player_text()
                 if (button.name == "Lift Mortgage"):
-                    self.selected_property.unmortgage(self.player)
+                    self.player.unmortgage(self.selected_property)
                     self.texts = []
                     self.buttons = []
                     self.buttons.append(Button("Back", 0, 0, 40, 40))
                     self.selected_property.add_property_text(self.texts, self.buttons, self.player)
                     self.update_player_text()
+                if (button.name == "Turn"):
+                    self.buttons.clear()
+                    player = self.players[self.currentTurn]
+                    player.roll(self)
+
 
 
                 
@@ -331,15 +290,26 @@ class Game():
         if player == self.player:
             self.texts = []
             self.update_player_text()
-            self.texts.append(Text(f"It's your turn!", 0, 0))
-            self.buttons.extend([Button('Roll', 0, 25, 40, 30), Button('Property Manager',50, 25, 165, 30), 
+            in_jail = self.player.position == -1
+            if in_jail:
+                self.texts.append(Text("You're in jail.", 0, 0))
+            else:
+                self.texts.append(Text(f"It's your turn!", 0, 0))           
+            self.buttons.extend([Button('Roll', 0, 25, 40, 30), 
+            Button('Property Manager',50, 25, 165, 30), 
             Button('Trade',225, 25, 55, 30)])
         else:
-            self.texts.append((Text(f"It's Player {player.id}'s turn! (CPU)", 0, 0)))
-            player.play(self.board, self.texts, self.players)      
-            self.buttons = [Button("next",0, 70, 70, 40)]   
+            in_jail = player.position == -1
+            if in_jail:
+                self.texts.append(Text(f"Player {player.id} is in jail.", 0, 0))
+            else:
+                self.texts.append((Text(f"It's Player {player.id}'s turn! (CPU)", 0, 0)))
+            self.buttons = [(Button("Turn", 0, 70, 70, 40))]           
 
     def update_player_text(self):
+        for t in self.texts:
+            if t in self.player_cash_texts:
+                self.texts.remove(t)
         self.CASH_TEXT_X_POS = 700
         self.player_cash_texts = [Text(f"Your Cash:       "      
         f"${str(self.player.money)}", self.CASH_TEXT_X_POS, 0), 
@@ -411,7 +381,7 @@ class Game():
                 prop.add_property_text(self.texts, self.buttons, self.player)
 
 
-    def draw_properties(self, properties : list[Property], base_x : int,
+    def draw_properties(self, properties, base_x : int,
      base_y : int, edge_case=True, player=None, no_stack=None):
         seen = []
         for property in properties:
@@ -425,7 +395,11 @@ class Game():
                 seen[seen.index(image_str) + 2] = multiplier 
 
                 card.rect.x = old_x
-                card.rect.y = base_y + (10 * multiplier)
+                if edge_case:
+                    old_y = seen[seen.index(image_str) + 3]
+                    card.rect.y = old_y + (10 * multiplier)
+                else:
+                    card.rect.y = base_y + (10 * multiplier)
                 card.draw(self.WIN)
             else:
                 if edge_case:
@@ -437,9 +411,11 @@ class Game():
                         base_y += 80    
                 base_x += 55
                 seen.extend([image_str, base_x, 0])
-
+                if edge_case:
+                    seen.append(base_y)
                 card.rect.x, card.rect.y = base_x, base_y
                 card.draw(self.WIN)
+
 
     def draw_window(self):
         
@@ -487,6 +463,8 @@ class Game():
 
         pygame.display.update()
 
+        
+
 def main():
     
     game = Game()
@@ -509,32 +487,51 @@ def main():
                     game.player.money += 400
                     game.texts = []
                     game.update_player_text()
-                if event.key == pygame.K_p:
-                    game.player.buy(game.board.space[1])
-                    game.player.buy(game.board.space[3])
-                    game.player.buy(game.board.space[6])
-                    game.player.buy(game.board.space[8])
-                    game.player.buy(game.board.space[9])
-                    game.player.buy(game.board.space[11])
-                    game.player.buy(game.board.space[13])
-                    game.player.buy(game.board.space[14])
-                    game.player.buy(game.board.space[16])
-                    game.player.buy(game.board.space[18])
-                    game.player.buy(game.board.space[19])
-                    game.player.buy(game.board.space[21])
-                    game.player.buy(game.board.space[23])
-                    game.player.buy(game.board.space[24])
-                    game.player.buy(game.board.space[26])
-                    game.player.buy(game.board.space[27])
-                    game.player.buy(game.board.space[29])
-                    game.player.buy(game.board.space[31])
-                    game.player.buy(game.board.space[32])
-                    game.player.buy(game.board.space[34])
-                    game.player.buy(game.board.space[37])
-                    game.player.buy(game.board.space[39])
-                    for p in game.player.properties:
-                        p.current_tier = 3
-
+                if event.key == pygame.K_1:
+                    player = game.players[game.currentTurn]
+                    player.roll(game, r=1)             
+                if event.key == pygame.K_2:
+                    player = game.players[game.currentTurn]
+                    player.roll(game, r=2) 
+                if event.key == pygame.K_3:
+                    player = game.players[game.currentTurn]
+                    player.roll(game, r=3) 
+                if event.key == pygame.K_4:
+                    player = game.players[game.currentTurn]
+                    player.roll(game, r=4) 
+                if event.key == pygame.K_5:
+                    player = game.players[game.currentTurn]
+                    player.roll(game, r=5) 
+                if event.key == pygame.K_6:
+                    player = game.players[game.currentTurn]
+                    player.roll(game, r=6) 
+                if event.key == pygame.K_7:
+                    player = game.players[game.currentTurn]
+                    player.roll(game, r=7) 
+                if event.key == pygame.K_8:
+                    player = game.players[game.currentTurn]
+                    player.roll(game, r=8) 
+                if event.key == pygame.K_9:
+                    player = game.players[game.currentTurn]
+                    player.roll(game, r=9) 
+                if event.key == pygame.K_KP_1:
+                    game.player.roll(game, r=1)
+                if event.key == pygame.K_KP_2:
+                    game.player.roll(game, r=2)
+                if event.key == pygame.K_KP_3:
+                    game.player.roll(game, r=3)
+                if event.key == pygame.K_KP_4:
+                    game.player.roll(game, r=4)
+                if event.key == pygame.K_KP_5:
+                    game.player.roll(game, r=5)
+                if event.key == pygame.K_KP_6:
+                    game.player.roll(game, r=6)
+                if event.key == pygame.K_KP_7:
+                    game.player.roll(game, r=7)
+                if event.key == pygame.K_KP_8:
+                    game.player.roll(game, r=8)
+                if event.key == pygame.K_KP_9:
+                    game.player.roll(game, r=9)
         game.draw_window()
             
 
