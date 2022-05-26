@@ -62,6 +62,9 @@ class Game():
         self.trade_recipient = self.PLAYER_LIST[self.current_trade]
         # Trade list of two players involved in trade.
         self.trade_list = []
+        # Boolean to determine whether to draw the rejected offer
+        # Text.
+        self.rejected_offer = False
 
         # Exchange windows
         self.money_exchange = []
@@ -141,9 +144,8 @@ class Game():
                 if (button.name == "Don't Buy"): 
                     self.buttons = []
                     self.texts = []
-                    self.texts.extend([Text(f"You decided not to buy"
-                    f" {str(self.landed_on_space.space_name)}", 0, 20)],
-                    self.player_cash_texts)
+                    self.texts.append(Text(f"You decided not to buy"
+                    + f" {str(self.landed_on_space.space_name)}", 0, 20)),
                     self.buttons = [Button("next",0, 50, 70, 40)]
                 # pay player if landed on their property
                 if (button.name == "Pay"):
@@ -220,21 +222,28 @@ class Game():
                     player, player_2, player_exchange, player_2exchange = (self.trade_list[0], self.trade_list[1], 
                     self.property_exchange[0], self.property_exchange[1])
 
-                    for property in player_exchange:
-                        property.owner_rect[1] = player_2.color
-                    for property in player_2exchange:
-                        property.owner_rect[1] = player.color
-                    player.properties.extend(player_2exchange)  
-                    player_2.properties.extend(player_exchange)  
-                    self.property_exchange = [[], []]      
-                    player.money -= self.money_exchange[0]   
-                    player.money += self.money_exchange[1] 
+                    accept = player_2.evaluate_trade(self)
+                    if accept:
+                        for property in player_exchange:
+                            property.owner_rect[1] = player_2.color
+                        for property in player_2exchange:
+                            property.owner_rect[1] = player.color
+                        player.properties.extend(player_2exchange)  
+                        player_2.properties.extend(player_exchange)  
+                        self.property_exchange = [[], []]      
+                        player.money -= self.money_exchange[0]   
+                        player.money += self.money_exchange[1] 
 
-                    player_2.money -= self.money_exchange[1]   
-                    player_2.money += self.money_exchange[0]    
+                        player_2.money -= self.money_exchange[1]   
+                        player_2.money += self.money_exchange[0]    
 
-                    self.money_exchange = [0, 0]
-                    self.update_trade_text()
+                        self.money_exchange = [0, 0]
+                        self.update_trade_text()
+                        
+                    else:
+                        self.rejected_offer = True
+                        self.update_trade_text()
+                    
                 
                 if (button.name == "Property Manager"):
                     self.texts = []
@@ -327,7 +336,18 @@ class Game():
         self.texts.extend([Text(f"You (Current cash: ${self.player.money})", 50, 0),
         Text(f"Player {str(player.id)} (Current cash: ${player.money})", 450, 0),
         Text(f"Cash: ${str(self.money_exchange[0])}", 20, 600),
-        Text(f"Cash: ${str(self.money_exchange[1])}", 450, 600)])
+        Text(f"Cash: ${str(self.money_exchange[1])}", 450, 600),
+        Text(f"Total value ${str(self.get_total_value(0))}", 20, 650),
+        Text(f"Total value ${str(self.get_total_value(1))}", 450, 650)])
+        if self.rejected_offer:
+            self.texts.append(Text("Offer Rejected.", 20, 750))
+
+    def get_total_value(self, index):
+        total = 0
+        for p in self.property_exchange[index]:
+            total += p.printed_price 
+        total += self.money_exchange[index]
+        return total
         
     def handle_click_card(self, mouse):        
         
@@ -344,10 +364,12 @@ class Game():
                         self.trade_list[0].properties.append(p_2)
                         self.property_exchange[0].remove(p_2)
                         done = True
+                        self.rejected_offer = False
                     if property_list is self.property_exchange[1]:
                         self.trade_list[1].properties.append(p_2)
                         self.property_exchange[1].remove(p_2)
                         done = True
+                        self.rejected_offer = False
         if done is not True:
             for player in self.trade_list:
                 properties = player.properties
@@ -360,10 +382,13 @@ class Game():
                         if player is self.trade_list[0]:
                             self.property_exchange[0].append(p)
                             self.trade_list[0].properties.remove(p)
+                            self.rejected_offer = False
                         if player is self.trade_list[1]:
                             self.property_exchange[1].append(p)
                             self.trade_list[1].properties.remove(p)
+                            self.rejected_offer = False
                     i += 1
+        self.update_trade_text()
 
     # Handle clicking on cards during property management.             
     def handle_click_definition(self, mouse):
