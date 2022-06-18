@@ -92,8 +92,11 @@ class Game():
             button.rect.y <= mouse[1] <= button.rect.y 
             + button.rect.height)
             if (mouse_over_button):
+                button.current_color = button.color_over
                 if event:
                     button.run(self)
+            else:
+                button.current_color = button.color
 
     # Method used to advance the game to the next turn.                
     def handle_turn(self):
@@ -263,9 +266,8 @@ class Game():
              400, 200)     
         if self.in_manager:
             self.draw_properties(self.player.properties, -10, 5, edge_case=False, no_stack=True) 
-        # Draw all buttons
         for button in self.buttons:
-            pygame.draw.rect(self.WIN, button.color, button.rect)
+            pygame.draw.rect(self.WIN, button.current_color, button.rect)
             button.text.draw(self.WIN)
         for text in self.texts:
             text.draw(self.WIN)

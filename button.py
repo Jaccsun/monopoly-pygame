@@ -14,7 +14,9 @@ class Button:
         self.x, self.y, self.x_size, self.y_size  = x, y, x_size, y_size
         self.text = Text(text, x, y, color=(255, 255, 255))
         self.color = color 
+        self.color_over = (90, 90, 90)
         self.rect = pygame.Rect(x, y, x_size, y_size)
+        self.current_color = self.color
     
     def run(self, game):
         if (self.name == "Start"):
