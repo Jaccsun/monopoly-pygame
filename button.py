@@ -79,8 +79,13 @@ class Button:
             game.player.pay(game)
         # bankrupt properties button
         if (self.name == "Bankrupt"):
-            print("Thanks for playing!")
-            game.buttons = [Button("next",0, 50, 70, 40)]
+            game.buttons.clear()
+            game.texts.clear()
+            game.show_board = False
+            game.texts.append(Text("Thanks for playing!", 270, 200, size=50))
+            game.buttons.append(Button("Play again", 385, 270, 100, 50))
+        if (self.name == "Play again"):
+            print("test")
         if (self.name == "Trade"):
             game.texts = []
             game.buttons = []
