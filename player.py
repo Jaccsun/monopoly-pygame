@@ -1,10 +1,11 @@
+import os
 import itertools
 import random
 from typing import Tuple
 from board.board import Board
 from board.space import *
-from text import Text
-from button import Button
+from window.text import Text
+from window.button import Button
 import pygame
 
 # Color constants.
@@ -25,21 +26,59 @@ class Player:
     id = itertools.count(start = 1).__next__
 
     def __init__(self, color : Tuple, image):
+
         self.id = Player.id()
         self.position = 0
+
         self.money = 1500
         self.properties = []
         self.monopolies = []
         self.railroads_owned = 0
+
         self.color = color
         self.rectangle = pygame.Rect(690, 690, 35, 35) 
         self.image = image
+
         self.jail_turn = -1
         self.roll_num = None
 
-    # Draws the player at their current posiiton.
-    def draw(self, WIN): 
-        WIN.blit(self.image, (self.rectangle.x - 5, self.rectangle.y))
+
+    def get_prop_monopoly_status(self, property):
+        color, count = self.card.image_str, 0
+        for property in self.properties:
+            if property.card.image_str == color:
+                count += 1
+        if count == 3 or (count == 2 and 
+        (color == "BROWN_P" or color == "BLUE_P")):
+            return True
+        return False
+
+    def has_monopoly_for_color(self, color : str): 
+        count = 0 
+        for property in self.properties:
+            if property.color == color: 
+                count += 1
+        if count == 3 or (count == 2 and 
+        (color == 'brown' or color == 'blue')):
+            return True
+        return False
+
+
+
+
+
+
+
+
+
+
+
+
+# ---------OLD ----------------------------------------------------------------------------
+
+    # # Draws the player at their current posiiton.
+    # def draw(self, WIN): 
+    #     WIN.blit(self.image, (self.rectangle.x - 5, self.rectangle.y))
 
     # Moves player to a position on the board, accounts
     # for moving past GO.
@@ -94,7 +133,7 @@ class Player:
             if cpu and self.money - landed_on_space.get_current_price() > 0:
                 # Pay the other player.
                 self.pay(game, roll, cpu=True)
-                if type(landed_on_space) is not Monopoly_Utility:
+                if landed_on_space.type is not 'utility':
                     texts.append(Text(who + f" landed on Player {str(landed_on_space.owner.id)}'s "
                     + f"property and paid them {landed_on_space.get_current_price()}$", 0, 20))
                 buttons.clear()
@@ -193,8 +232,8 @@ class Player:
                 # Evaluate the ownable property.
                 self.evauluate_ownable(game, landed_on_space, roll, cpu) 
             # If space of chance or community chest type.
-            elif (type(landed_on_space) is Monopoly_Chance
-            or type(landed_on_space) is Monopoly_Community_Chest): 
+            elif (landed_on_space.type is 'chance'
+            or landed_on_space.type is 'comChest'): 
 
                 # Call the draw card method.
                 buttons.clear()
@@ -240,7 +279,7 @@ class Player:
         self.money -= landed_on_space.printed_price
         self.properties.append(landed_on_space)
         landed_on_space.owner = self
-        if type(landed_on_space) is Monopoly_Property:
+        if landed_on_space.type is 'property':
             landed_on_space.increase_tier()
         
         BOTTOM_Y = 692
@@ -276,8 +315,8 @@ class Player:
         is_income = landed_on_space.space_name == "Income Tax"
         is_luxury = landed_on_space.space_name == "Luxury Tax"
         is_tax = is_income or is_luxury
-        is_railroad = type(landed_on_space) is Monopoly_Railroad
-        is_utility = type(landed_on_space) is Monopoly_Utility
+        is_railroad = landed_on_space.type is 'railroad'
+        is_utility = landed_on_space.type is 'utility'
 
         if is_income:
             price = 200
@@ -287,7 +326,7 @@ class Player:
             owner = landed_on_space.owner
             tier = -1
             for p in owner.properties:
-                if type(p) is Monopoly_Railroad:
+                if p.type is 'railroad':
                     tier += 1
             landed_on_space.current_tier = tier
             price = landed_on_space.get_current_price()
@@ -295,7 +334,7 @@ class Player:
             owner = landed_on_space.owner
             tier = -1
             for p in owner.properties:
-                if type(p) is Monopoly_Utility:
+                if p.type is 'railroad':
                     tier += 1     
             landed_on_space.current_tier = tier
             price = landed_on_space.get_current_price() * roll
@@ -324,7 +363,7 @@ class Player:
         players.remove(self)
 
     # Determines whether the property is a monopoly.
-    def is_monopoly(self, property : Monopoly_Property):
+    def is_monopoly(self, property : Monopoly_Space):
         color, count = property.card.image_str, 0
         for p in self.properties:
             if p.card.image_str == color:
@@ -335,28 +374,28 @@ class Player:
         return False     
 
     # Mortgage a property.
-    def mortgage(self, property : Monopoly_Property):
+    def mortgage(self, property : Monopoly_Space):
         property.current_tier = -1
         self.money += property.mortgage_value
 
     # Unmortgage a property.
-    def unmortgage(self, property : Monopoly_Property):
-        if type(property) is Monopoly_Utility:
+    def unmortgage(self, property : Monopoly_Space):
+        if property.type is 'utility':
             if self.money - property.mortgage_value > 0:
                 count = 0
                 for p in self.properties:
-                    if type(p) is Monopoly_Utility:
+                    if p.type is 'utility':
                         count += 1
                 if count == 2:
                     property.current_tier = 1
                 else:
                     property.current_tier = 0
                 self.money -= property.mortgage_value
-        if type(property) is Monopoly_Railroad:
+        if property.type is 'railroad':
             if self.money - property.mortgage_value > 0:
                 count = 0
                 for p in self.properties:
-                    if type(p) is Monopoly_Railroad:
+                    if p.type is 'railroad':
                         count += 1
                 if count == 1:
                     property.current_tier = 0
@@ -367,7 +406,7 @@ class Player:
                 elif count == 4:
                     property.current_tier = 3
                 self.money -= property.mortgage_value
-        if type(property) is Monopoly_Property:
+        if property.type is 'property':
             if self.money - property.mortgage_value > 0:
                 if self.is_monopoly(property):
                     property.current_tier = 1
@@ -375,7 +414,7 @@ class Player:
                     property.current_tier = 0
                 self.money -= property.mortgage_value
 
-    def draw_card(self, chance : Monopoly_Chance, board : Board, players):
+    def draw_card(self, chance : Monopoly_Space, board : Board, players):
         r = chance.draw_card()
         Y_CONST = 20
         match r:
@@ -482,7 +521,7 @@ class Player:
                 + "Receive $150.", y=Y_CONST)
         return Text("Missed case?")
 
-    def draw_card(self, community_chest : Monopoly_Community_Chest, 
+    def draw_card(self, community_chest : Monopoly_Space, 
     board : Board, players):
         r = community_chest.draw_card()
         Y_CONST = 20
@@ -570,12 +609,6 @@ class Player:
                 return Text("You inherit $100.", 
                 y=Y_CONST)
         return Text("Missed case?")
-
-
-# Draws all current players on the board.
-def draw_all_players(players : list, WIN):
-    for player in players:
-        player.draw(WIN)
 
 
 

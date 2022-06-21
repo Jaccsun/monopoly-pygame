@@ -25,6 +25,8 @@ class Board:
 
         self.IMAGE = pygame.image.load(os.path.join('Assets', 'board.jpg'))
 
+        self.show = True
+
         # SPECIAL JAIL SPACE
         self.JAIL = Monopoly_Space(
             name = "Jail",
@@ -50,7 +52,8 @@ class Board:
             printedPrice = 60,
             mortgageValue = 30,
             buildingCosts = 50,
-            rentTiers = (2, 4, 10, 30, 90, 160, 250) 
+            rentTiers = (2, 4, 10, 30, 90, 160, 250),
+            color = 'brown'
         )
 
         # SPACE 2
@@ -70,7 +73,8 @@ class Board:
             printedPrice = 60,
             mortgageValue = 30,
             buildingCosts = 50,
-            rentTiers = (4, 8, 20, 60, 180, 320, 450)
+            rentTiers = (4, 8, 20, 60, 180, 320, 450),
+            color = 'brown'
         )
 
         # SPACE 4
@@ -85,7 +89,7 @@ class Board:
             name = "Reading Railroad", 
             type = 'railroad', 
             location = (432, BOTTOM_Y), 
-            cardImage = BLACK_P
+            cardImage = BLACK_P,
         )
 
         # SPACE 6
@@ -97,7 +101,8 @@ class Board:
             printedPrice = 100,
             mortgageValue = 50,
             buildingCosts = 50,
-            rentTiers=(6, 12, 30, 90, 270, 400, 550)
+            rentTiers=(6, 12, 30, 90, 270, 400, 550),
+            color = 'lightblue'
         )
 
         # SPACE 7
@@ -116,7 +121,8 @@ class Board:
             printedPrice = 100,
             mortgageValue = 50,
             buildingCosts = 50,
-            rentTiers=(6, 12, 30, 90, 270, 400, 550)
+            rentTiers=(6, 12, 30, 90, 270, 400, 550),
+            color = 'lightblue'
         )
 
         # SPACE 9
@@ -128,7 +134,8 @@ class Board:
             printedPrice = 120,
             mortgageValue = 60,
             buildingCosts = 50,
-            rentTiers = (8, 16, 40, 100, 300, 450, 600)
+            rentTiers = (8, 16, 40, 100, 300, 450, 600),
+            color = 'lightblue'
         )
 
         # SPACE 10
@@ -147,7 +154,8 @@ class Board:
             printedPrice = 140,
             mortgageValue = 70,
             buildingCosts = 100,
-            rentTiers = (10, 20, 50, 150, 450, 625, 750)
+            rentTiers = (10, 20, 50, 150, 450, 625, 750),
+            color = 'lightblue'
         )
 
         # SPACE 12
@@ -167,7 +175,8 @@ class Board:
             printedPrice = 140,
             mortgageValue = 70,
             buildingCosts = 100,
-            rentTiers=(10, 20, 50, 150, 450, 625, 750)
+            rentTiers=(10, 20, 50, 150, 450, 625, 750),
+            color = 'pink'
         )
 
         # SPACE 14
@@ -179,7 +188,9 @@ class Board:
             printedPrice = 160,
             mortgageValue = 80,
             buildingCosts = 100,
-            rentTiers= (12, 24, 60, 180, 500, 700, 900)
+            rentTiers= (12, 24, 60, 180, 500, 700, 900),
+            color = 'pink'
+            
         )
 
         # SPACE 15
@@ -199,7 +210,8 @@ class Board:
             printedPrice = 180,
             mortgageValue = 90,
             buildingCosts = 100,
-            rentTiers= (14, 28, 70, 200, 550, 750, 950)
+            rentTiers= (14, 28, 70, 200, 550, 750, 950),
+            color = 'orange'
         )
 
         # SPACE 17
@@ -218,7 +230,8 @@ class Board:
             printedPrice = 180,
             mortgageValue = 90,
             buildingCosts = 100,
-            rentTiers= (14, 28, 70, 200, 550, 750, 950)
+            rentTiers= (14, 28, 70, 200, 550, 750, 950),
+            color='orange'
         )
 
         # SPACE 19
@@ -230,7 +243,8 @@ class Board:
             printedPrice = 200,
             mortgageValue = 100,
             buildingCosts = 100,
-            rentTiers = (16, 32, 80, 220, 600, 800, 1000)
+            rentTiers = (16, 32, 80, 220, 600, 800, 1000),
+            color = 'orange'
         )
 
         # SPACE 20
@@ -249,7 +263,8 @@ class Board:
             printedPrice = 220,
             mortgageValue = 110,
             buildingCosts = 150,
-            rentTiers = (18, 36, 90, 250, 700, 875, 1050)
+            rentTiers = (18, 36, 90, 250, 700, 875, 1050),
+            color = 'red'
         )
 
         # SPACE 22
@@ -268,7 +283,8 @@ class Board:
             printedPrice = 220,
             mortgageValue = 110,
             buildingCosts = 150,
-            rentTiers = (18, 36, 90, 250, 700, 875, 1050)
+            rentTiers = (18, 36, 90, 250, 700, 875, 1050),
+            color = 'red'
         )
 
         # SPACE 24
@@ -280,7 +296,8 @@ class Board:
             printedPrice = 240,
             mortgageValue = 120,
             buildingCosts = 150,
-            rentTiers = (20, 40, 100, 300, 750, 925, 1100)
+            rentTiers = (20, 40, 100, 300, 750, 925, 1100),
+            color = 'red'
         )
 
         # SPACE 25
@@ -288,7 +305,7 @@ class Board:
             name = "B & O Railroad",
             type = 'property',
             location = (432, TOP_Y),
-            cardImage = BLACK_P 
+            cardImage = BLACK_P
         )
 
         # SPACE 26
@@ -300,7 +317,8 @@ class Board:
             printedPrice = 260,
             mortgageValue = 130,
             buildingCosts = 150,
-            rentTiers = (22, 44, 110, 330, 800, 975, 1150)
+            rentTiers = (22, 44, 110, 330, 800, 975, 1150),
+            color = 'yellow'
         )
 
 
@@ -313,7 +331,8 @@ class Board:
             printedPrice = 260,
             mortgageValue = 130,
             buildingCosts = 150,
-            rentTiers = (22, 44, 110, 330, 800, 975, 1150)
+            rentTiers = (22, 44, 110, 330, 800, 975, 1150),
+            color = 'yellow'
         )
 
 
@@ -334,7 +353,8 @@ class Board:
             printedPrice = 280,
             mortgageValue = 140,
             buildingCosts = 150,
-            rentTiers = (24, 28, 120, 360, 850, 1025, 1200)
+            rentTiers = (24, 28, 120, 360, 850, 1025, 1200),
+            color = 'yellow'
         )
 
 
@@ -354,7 +374,8 @@ class Board:
             printedPrice = 300,
             mortgageValue = 150,
             buildingCosts = 200,
-            rentTiers = (26, 52, 130, 390, 900, 1100, 1275)
+            rentTiers = (26, 52, 130, 390, 900, 1100, 1275),
+            color = 'green'
         )
 
         # SPACE 32
@@ -366,7 +387,8 @@ class Board:
             printedPrice = 300,
             mortgageValue = 150,
             buildingCosts = 200,
-            rentTiers = (26, 52, 130, 390, 900, 1100, 1275)
+            rentTiers = (26, 52, 130, 390, 900, 1100, 1275),
+            color = 'green'
         )
 
         # SPACE 33
@@ -385,7 +407,8 @@ class Board:
             printedPrice = 320,
             mortgageValue = 160,
             buildingCosts = 200,
-            rentTiers = (28, 56, 150, 450, 1000, 1200, 1400)
+            rentTiers = (28, 56, 150, 450, 1000, 1200, 1400),
+            color = 'green'
         )
 
         # SPACE 35
@@ -412,7 +435,8 @@ class Board:
             printedPrice = 350,
             mortgageValue = 175,
             buildingCosts = 200,
-            rentTiers = (35, 70, 175, 500, 1100, 1300, 1500)
+            rentTiers = (35, 70, 175, 500, 1100, 1300, 1500),
+            color = 'blue'
         )
 
         # SPACE 38
@@ -431,7 +455,8 @@ class Board:
             printedPrice = 400,
             mortgageValue = 200,
             buildingCosts = 200,
-            rentTiers = (50, 100, 200, 600, 1400, 1700, 2000)
+            rentTiers = (50, 100, 200, 600, 1400, 1700, 2000),
+            color = 'blue'
         )   
 
         self.space = (GO, MEDITERRANEAN_AVENUE, COMMUNITY_CHEST_1, BALTIC_AVENUE, INCOME_TAX, READING_RAILROAD, ORIENTAL_AVENUE, CHANCE_1,

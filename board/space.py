@@ -1,14 +1,20 @@
 import pygame
 
-propertyTypeList = [1, 3 ,2]
-
 class Monopoly_Space:
 
+    name : str
+    type : str
+    x : int
+    y : int
+    isOwnable : bool
+    cardImage : pygame.Surface
+    cardImageRect : pygame.rect.Rect
+
     def __init__(self, name : str, type : str, 
-    location : tuple, isOwnable = False, 
-    cardImage = None, printedPrice = None, 
-    mortgageValue = None, buildingCosts = None, 
-    rentTiers = None):
+    location : tuple, isOwnable : bool = False, 
+    cardImage : pygame.Surface = None, printedPrice : int = None, 
+    mortgageValue : int = None, buildingCosts : int = None, 
+    rentTiers : list[int]= None, color : str =None):
         self.name = name
         self.type = type
         self.x = location[0]
@@ -19,7 +25,7 @@ class Monopoly_Space:
             self.cardImage = pygame.transform.scale(cardImage, (50, 70))
             self.cardImageRect = self.image.get_rect()
 
-            self.owner = None
+            # self.owner = None
             self.ownerRect = None
             self.mortgageValue = None
             self.currentTier = 0
@@ -31,4 +37,6 @@ class Monopoly_Space:
             self.mortgageValue = mortgageValue
             self.rentTiers = rentTiers
         if type =="property":
+            self.color = color
             self.buildingCosts = buildingCosts
+
