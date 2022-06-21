@@ -2,7 +2,7 @@ from random import random
 from board.board import Board
 from board.space import *
 from player import Player
-from text import Text
+from window.text import Text
 import random
 
 class CPU(Player):
@@ -15,17 +15,16 @@ class CPU(Player):
 
     def attempt_mortgage(self, cost):
         for p in self.properties:
-            if type(p) is Monopoly_Ownable:
+            if p.type is 'property' or p.type is 'railroad' or p.type is 'utility':
                 p.mortgage()
             if self.money >= cost:
                 return True
         return False
 
-    def draw_card(self, community_chest: Monopoly_Community_Chest, board: Board, players):
-        return super().draw_card(community_chest, board, players)
-
-    # Cpu evaluation of the quality of a trade. 
-    # Based on amount of points given.
+    # DEPRECATED
+    # def draw_card(self, community_chest: Monopoly_Community_Chest, board: Board, players):
+    #     return super().draw_card(community_chest, board, players)
+    
     def evaluate_trade(self, game):
 
         # Points that indicate quality of trade.
