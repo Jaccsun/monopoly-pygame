@@ -8,6 +8,9 @@ from propertymanager import PropertyManager
 from board.board import Board
 from player import Player
 from board.space import MonopolySpace
+from pygame.rect import Rect
+import random
+
 class Game():
 
     def __init__(self):
@@ -47,9 +50,8 @@ class Game():
         pygame.font.init()
 
         self.texts = []
-        self.texts.append(Text("Welcome to monopoly!", (0, 0)))
-        self.buttons = []
-        self.buttons.append(Button("Start", 20, 40, 120, 40))
+        self.texts.append(Text("Welcome to monopoly!"))
+        self.buttons = [Button("Start", Rect(20, 40, 120, 40), event=self.start_game_event)]
 
         self.tradeSystem = TradeSystem()
         self.propertyManager = PropertyManager()
@@ -65,7 +67,10 @@ class Game():
         self.drawPlayerPieces = True
         self.drawPropertyCards = True
 
-    # --- Information-----
+    #----------------------Information--------------------------#
+
+    # Returns all properties including those currently in the 
+    # trading window.
     def get_all_known_properties(self) -> list[MonopolySpace]:
         allKnownPropertyList = []
         for player in self.PLAYER_LIST:
@@ -76,10 +81,16 @@ class Game():
                 allKnownPropertyList.append(property)
         return allKnownPropertyList
 
-    # -------
+    # -------------------Turn-Advancement-----------------------#
 
     # Method used to advance the game to the next turn.                
     def advance_turn(self):
+
+        if self.currentTurn == 3:
+            self.currentTurn = 0
+        else:
+            self.currentTurn += 1
+
         player = self.players[self.currentTurn]
         
         if player == self.player1:
@@ -89,25 +100,144 @@ class Game():
             if in_jail:
                 self.texts.append(Text("You're in jail.", (0, 0)))
             else:
-                self.texts.append(Text(f"It's your turn!", (0, 0)))           
-            self.buttons.extend([Button('Roll', 0, 25, 40, 30), 
-            Button('Property Manager',50, 25, 165, 30), 
-            Button('Trade',225, 25, 55, 30),
-            Button('Bankrupt', 290, 25, 80, 30)])
+                self.texts.append(Text(f"It's your turn!", (0, 0)))     
+
+            self.buttons.extend([
+                Button('Roll', Rect(0, 25, 40, 30), 
+                event=self.player1.roll(self)), 
+                Button('Property Manager', Rect(50, 25, 165, 30), 
+                event=self.propertyManager.open), 
+                Button('Trade', Rect(225, 25, 55, 30), 
+                event=self.tradeSystem.open(self.player1, 
+                self.player2, self.buttons)),
+                Button('Bankrupt', Rect(290, 25, 80, 30), 
+                event=self.bankrupt_event)
+            ])
         else:
             in_jail = player.position == -1
             if in_jail:
                 self.texts.append(Text(f"Player {player.id} is in jail.", (0, 0)))
             else:
                 self.texts.append((Text(f"It's Player {player.id}'s turn! (CPU)", (0, 0))))
-            self.buttons = [(Button("Turn", 0, 70, 70, 40))]           
+            self.buttons = [(Button("Turn", Rect(0, 70, 70, 40), event=self.advance_turn))]           
 
-    # --------UPDATE -------------------
+    #------------Hovering-and-Clicking-functionality------------#
+
+    def handle_mouse_position_event(self, mouseDown : pygame.event.Event):
+        mousePos = pygame.mouse.get_pos()
+
+        # Always do a button scan. 
+        button = self._find_hovered_button(self.buttons, mousePos)
+        property = None
+
+        # Only look for properties if needed.
+        if self.propertyManager.turnedOn or self.tradeSystem.turnedOn:
+            property = self._find_hovered_property(self.get_all_known_properties()) 
+
+        # If mouse is over button. 
+        if button:
+            button.currentColor = button.colorOver
+        # If mouse if over property.
+        if property:
+            print("test2")
+        # If mouse was down.
+        if mouseDown:
+            self.handle_mouse_down_event(button, property)
+    
+    def handle_mouse_down_event(self, button : Button, property : MonopolySpace):
+        # If a button was found, call the event attached to that button.
+        if button: 
+            self._run_event_wrapper(
+                button.event, 
+                button.eventClearTextAndButton, 
+                button.eventUpdatePlayerText
+        )
+        # Only handle clicking on properties when 
+        # tradeSystem or propertyManager are turned on.
+        if self.tradeSystem.turnedOn:
+            self.tradeSystem.handle_property_click(property)
+        if self.propertyManager.turnedOn:
+            self._handle_mouse_down_card_p_manage()
+        
+    def _find_hovered_button(self, buttons : list[Button], mousePos) -> Button:
+        for button in buttons:
+            mouse_over_button = (button.rect.x <= mousePos[0] 
+            <= button.rect.x + button.rect.width and
+            button.rect.y <= mousePos[1] <= button.rect.y 
+            + button.rect.height)
+            if (mouse_over_button):
+                return button
+        return None
+
+    # Check the list of properties to find 
+    def _find_hovered_property(self, mousePos, propertyList : list[MonopolySpace]
+    ) -> MonopolySpace:
+        for property in propertyList:
+            cardImageRect = property.cardImageRect
+            mouse_over_card = (cardImageRect.x <= mousePos[0] <= cardImageRect.x + cardImageRect.width and
+            cardImageRect.y <= mousePos[1] <= cardImageRect.y + cardImageRect.height)
+            if mouse_over_card:
+                return property
+        return None
+    
+    #--------------------------Events---------------------------#
+
+    def start_game_event(self):
+        self.buttons.append(Button("Roll (Order)", Rect(280, 0, 90, 40),
+        event=self.roll_dice_event))
+        self.texts.append(Text("Roll to determine game order:", (0, 0)))
+
+    def roll_dice_event(self):
+        rolls = [random.randint(2, 12) for _ in range(4)]
+        self.players = [x[1] for x in sorted(zip(rolls, self.players),
+        key= lambda test: test[0], reverse=True)]
+
+        self.texts.extend([Text(f"Player 1 rolled: {str(rolls[0])}", (0, 60)), 
+        Text(f"Player 2 rolled: {str(rolls[1])}", (200, 60)), 
+        Text(f"Player 3 rolled: {str(rolls[2])}", (400, 60)),
+        Text(f"Player 4 rolled: {str(rolls[3])}", (600, 60))])
+        self.buttons.append(Button("Play", Rect(0, 0, 70, 40), 
+        event=self.advance_turn))
+
+    def open_property_manager_event(self):
+        self.update_player_text()
+        self.propertyManager.turnedOn = True
+        self.board.show = False
+        self.buttons.append(Button("Back", Rect(0, 0, 40, 40)), 
+        event=self.return_to_main_screen_event)
+
+    def return_to_main_screen_event(self):
+        if self.propertyManager.turnedOn:
+            self.propertyManager.turnedOn = False
+        elif self.tradeSystem.turnedOn:
+            self.tradeSystem.turnedOn = False
+        
+        self.update_player_text()
+
+        self.board.show = True
+        self.texts.append(Text(f"It's your turn!", (0, 0)))
+        self.buttons.extend([
+            Button('Roll', Rect(0, 25, 40, 30), event=self.roll_dice_event), 
+            Button("Property Manager", Rect(50, 25, 165, 30), event=self.open_property_manager_event), 
+            Button('Trade', Rect(225, 25, 55, 30), event=self.open_trade_window_event)
+        ])
+
+    def bankrupt_event(self):
+        print("Thanks for playing!")
+
+
+    def _run_event_wrapper(self, event, 
+    eventClearTextAndButton, eventUpdatePlayerText):
+        if eventClearTextAndButton:
+            self.buttons.clear()
+            self.texts.clear()
+        event()
+        if eventUpdatePlayerText:
+            self.update_player_text()
+        
+    #-----------------------Visual-Updates-----------------------#
 
     def update_player_text(self):
-        for t in self.texts:
-            if t in self.player_cash_texts:
-                self.texts.remove(t)
         self.CASH_TEXT_X_POS = 700
         self.player_cash_texts = [Text(f"Your Cash:       "      
         f"${str(self.player1.money)}", (self.CASH_TEXT_X_POS, 0)), 
@@ -131,74 +261,15 @@ class Game():
         if self.rejected_offer:
             self.texts.append(Text("Offer Rejected.", (20, 750)))
 
-    def get_total_value(self, index):
-        total = 0
-        for p in self.property_exchange[index]:
-            total += p.printed_price 
-        total += self.money_exchange[index]
-        return total
-        
-    # ------HANDLING ALL HOVER AND CLICK FUNCTIONALITY ---------------------------------
-
-    def handle_mouse_position_event(self, mouseDown : pygame.event.Event):
-        mousePos = pygame.mouse.get_pos()
-
-        # Always do a button scan. 
-        button = self._find_hovered_button(self.buttons, mousePos)
-        property = None
-
-        # Only look for properties if needed.
-        if self.propertyManager.turnedOn or self.tradeSystem.turnedOn:
-            property = self._find_hovered_property(self.get_all_known_properties()) 
-
-        # If mouse is over button. 
-        if button:
-            button.currentColor = button.colorOver
-        # If mouse if over property.
-        if property:
-            print("test2")
-        # Finally, advance to mouse down action.
-        if mouseDown:
-            self.handle_mouse_down(button, property)
-    
-    def handle_mouse_down(self, button : Button, property : MonopolySpace):
-        # WE ARE NOW HANDLING ACTIONS.
-        self._handle_mouse_down_button(button)
-        if self.tradeSystem.turnedOn:
-            self.tradeSystem.handle_property_click(property)
-        if self.propertyManager.turnedOn:
-            self._handle_mouse_down_card_p_manage()
+    # def get_total_value(self, index):
+    #     total = 0
+    #     for p in self.property_exchange[index]:
+    #         total += p.printed_price 
+    #     total += self.money_exchange[index]
+    #     return total
         
 
-    # Handles what happens when a button is hovered over.
-    # Takes in passed button event if it is clicked.
-    def _handle_mouse_down_button(self, button):
-        button.run(self)
-
-    #--------------------------------------------#
-
-    def _find_hovered_button(self, buttons : list[Button], mousePos) -> Button:
-        for button in buttons:
-            mouse_over_button = (button.rect.x <= mousePos[0] 
-            <= button.rect.x + button.rect.width and
-            button.rect.y <= mousePos[1] <= button.rect.y 
-            + button.rect.height)
-            if (mouse_over_button):
-                return button
-        return None
-
-    # Check the list of properties to find 
-    def _find_hovered_property(self, mousePos, propertyList : list[MonopolySpace] = None
-    ) -> MonopolySpace:
-        for property in propertyList:
-            cardImageRect = property.cardImageRect
-            mouse_over_card = (cardImageRect.x <= mousePos[0] <= cardImageRect.x + cardImageRect.width and
-            cardImageRect.y <= mousePos[1] <= cardImageRect.y + cardImageRect.height)
-            if mouse_over_card:
-                return property
-        return None
-    
-    #--- Handling all the drawing for the game ---# 
+    #--------------------------Drawing---------------------------#
 
     def draw(self):
         
@@ -222,6 +293,7 @@ class Game():
         # All buttons and texts.
         for button in self.buttons:
             pygame.draw.rect(self.WIN, button.currentColor, button.rect)
+            button.currentColor = button.color
             button.text.draw(self.WIN)
         for text in self.texts:
             text.draw(self.WIN)
@@ -293,7 +365,3 @@ class Game():
                     seen.append(baseY)
                 card.rect.x, card.rect.y = baseX, baseY
                 card.draw(self.WIN)
-
-
-        
-

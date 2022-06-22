@@ -6,6 +6,9 @@ class PropertyManager:
         self.turnedOn = False
         self.selected_property = None
 
+    def open(self) -> None:
+        print("test")
+
     def display_prop_details(self, property : MonopolySpace, texts, buttons):
         if not property.type == "property":
             raise TypeError("Space is not of property type.")

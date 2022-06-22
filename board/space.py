@@ -24,7 +24,7 @@ class MonopolySpace:
         self.isOwnable = isOwnable
 
         if isOwnable:
-            self.owner = "none"
+            self.owner = 'none'
             self.cardImage = pygame.transform.scale(cardImage, (50, 70))
             self.cardImageRect = self.cardImage.get_rect()
 

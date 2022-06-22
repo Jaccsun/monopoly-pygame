@@ -2,8 +2,9 @@ import pygame
 from player import Player
 from board.space import MonopolySpace
 from cpu import CPU
-
-# Trade manager for the game.
+from window.button import Button
+from pygame import Rect
+# Trade manager for the self.
 class TradeSystem:
 
     def __init__(self) -> None:
@@ -11,13 +12,12 @@ class TradeSystem:
         self.turnedOn = False
 
         self.current_trade = 1
-        # self.tradeRecipient = self.PLAYER_LIST[self.current_trade]
 
         self.leftPlayer, self.rightPlayer = None, None
         self.tradeParticipants = [self.leftPlayer, self.rightPlayer]
 
         # Exchange windows
-        self.moneyExchange = []
+        self.moneyExchange = [0, 0]
         self.propertyExchange = [[],[]]
         
         # Visual representation of trade windows
@@ -26,12 +26,49 @@ class TradeSystem:
             pygame.Rect(450, 200, 400, 400)
         )
 
-    # Advances the trade to the next player.
-    # Follow TRADE_LIST order so it is constant.
-    def change_trade_recipient(self):
-        print("test")
+    # Opens the window and displays 
+    def open(self, leftPlayer : Player, rightPlayer : Player,
+    buttons : list[Button]):
+        self.leftPlayer = leftPlayer
+        self.rightPlayer = rightPlayer
 
-    # Executes the exchange between two players and rightPlayer can be given 
+        # self.moneyExchange = [0, 0]
+        # self.show_board = False
+        # self.current_trade = 1
+        # self.tradeParticipants.extend([self.player, self.player_2])
+
+        self.buttons.extend([
+            Button("Next Player",Rect(790, 0, 105, 40), 
+                event=self.change_trade_recipient),
+            Button("Back", Rect(0, 0, 40, 40),
+                event = self.needMethod),
+            Button("Increase", Rect(140, 600, 75, 40),
+                self.increase('left')),
+            Button("Decrease", Rect(240, 600, 75, 40),
+                self.decrease('left')),
+            Button("Increase", Rect(580, 600, 75, 40),
+                self.increase('right')),
+            Button("Decrease", Rect(680, 600, 75, 40),
+                self.increase('right')),
+            Button("Make Trade", Rect(20, 700, 120, 50),
+                self.exchange),           
+        ])
+
+    def increase(self, side : str):
+        if (side == 'left' and self.moneyExchange[0] + 50 
+        <= self.tradeParticipants[0].money):
+                self.moneyExchange[0] += 50
+        if (side == 'right' and self.moneyExchange[1] + 50 
+        <= self.tradeParticipants[1].money):
+                self.moneyExchange[1] += 50
+
+    def decrease(self, side : str):
+        if side == 'left' and self.moneyExchange[0] - 50 >= 0:
+            self.moneyExchange[0] -= 50
+        if side == 'right' and self.moneyExchange[1] - 50 >= 0:
+            self.moneyExchange[1] -= 50
+
+     # Executes the exchange between two players and rightPlayer can be given 
     # as arguments, or will default to what is. leftPlayer cannot be a CPU
     def exchange(self, tradeParticipants : list[Player] = None, 
     moneyExchange : list[int] = None, 
@@ -82,51 +119,49 @@ class TradeSystem:
             self.moneyExchange.extend([0, 0])
             self.propertyExchange.clear()
             self.propertyExchange.extend[[], []]
-            # game.update_trade_text()
+            # self.update_trade_text()
             
         else:
             print("test")
-            # game.rejected_offer = True
-            # game.update_trade_text()
+            # self.rejected_offer = True
+            # self.update_trade_text()
+
+
+    # Advances the trade to the next player.
+    def change_trade_recipient(self):
+        self.moneyExchange.clear()
+        self.moneyExchange.extend([0, 0])    
+
+        self.tradeParticipants[0].properties.extend(self.propertyExchange[0])
+        self.tradeParticipants[1].properties.extend(self.propertyExchange[1])
+        self.propertyExchange = [[],[]]
+
+        player = self.PLAYER_LIST[self.current_trade]
+        self.tradeParticipants[1] = player    
 
     # Handles what happens when a property in the trade window is clicked on.
     # Entirely depends on context.
-    def handle_property_click(self, clickedProperty : MonopolySpace):
-        
-        i = 0
-        done = False
-                
+    def handle_property_click(self, clickedProperty : MonopolySpace):  
         # ADD TO TRADE WINDOW
-        if property_list is self.property_exchange[0]:
-            self.trade_list[0].properties.append(p_2)
-            self.property_exchange[0].remove(p_2)
-            done = True
-            self.rejected_offer = False
-        if property_list is self.property_exchange[1]:
-            self.trade_list[1].properties.append(p_2)
-            self.property_exchange[1].remove(p_2)
-            done = True
-            self.rejected_offer = False
+        if clickedProperty in self.tradeParticipants[0]:
+            self.propertyExchange[0].append(clickedProperty)
+            self.tradeParticipants[0].properties.remove(clickedProperty)
+            return None
+        if clickedProperty in self.tradeParticipants[1]:
+            self.propertyExchange[1].append(clickedProperty)
+            self.tradeParticipants[1].properties.remove(clickedProperty)
+            return None
         # REMOVE FROM TRADE WINDOW
-        if done is not True:
-            for player in self.trade_list:
-                properties = player.properties
-                for p in properties:
-                    card_rect = p.card.rect
-                    
-                    mouse_over_card = (card_rect.x <= mouse[0] <= card_rect.x + card_rect.width and
-                    card_rect.y <= mouse[1] <= card_rect.y + card_rect.height)
-                    if mouse_over_card:
-                        if player is self.trade_list[0]:
-                            self.property_exchange[0].append(p)
-                            self.trade_list[0].properties.remove(p)
-                            self.rejected_offer = False
-                        if player is self.trade_list[1]:
-                            self.property_exchange[1].append(p)
-                            self.trade_list[1].properties.remove(p)
-                            self.rejected_offer = False
-                    i += 1
-                self.update_trade_text()
-    def _find_trade_window(self, property : MonopolySpace):
-        print("test")
-    
+        if clickedProperty in self.propertyExchange[0]:
+            self.tradeParticipants[0].properties.append(clickedProperty)
+            self.propertyExchange[0].remove(clickedProperty)
+            return None
+        if clickedProperty is self.propertyExchange[1]:
+            self.tradeParticipants[1].properties.append(clickedProperty)
+            self.propertyExchange[1].remove(clickedProperty)
+            return None
+
+    def _reset(self):
+        self.moneyExchange.clear()
+        self.moneyExchange.extend([0, 0])
+        self.currentTrade = 1
