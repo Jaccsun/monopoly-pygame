@@ -1,4 +1,4 @@
-from board.space import Monopoly_Space
+from board.space import MonopolySpace
 import pygame
 import os 
 
@@ -28,22 +28,24 @@ class Board:
         self.show = True
 
         # SPECIAL JAIL SPACE
-        self.JAIL = Monopoly_Space(
+        self.JAIL = MonopolySpace(
             name = "Jail",
             type = 'jail', 
-            location = (185, 685)
+            location = (185, 685),
+            isOwnable = False
         )
 
         # SPACE 0
-        GO = Monopoly_Space(
+        GO = MonopolySpace(
             name = "GO", 
             type = 'other', 
-            location = (690, 690)
+            location = (690, 690),
+            isOwnable = False
         )
 
 
         # SPACE 1
-        MEDITERRANEAN_AVENUE = Monopoly_Space(
+        MEDITERRANEAN_AVENUE = MonopolySpace(
             name = "Mediterranean Avenue (Brown)", 
             type = 'property',
             location = (630, BOTTOM_Y),
@@ -57,14 +59,15 @@ class Board:
         )
 
         # SPACE 2
-        COMMUNITY_CHEST_1 = Monopoly_Space(
+        COMMUNITY_CHEST_1 = MonopolySpace(
             name = "Community Chest", 
             type = 'comChest', 
-            location = (580, BOTTOM_Y)
+            location = (580, BOTTOM_Y),
+            isOwnable = False
         )
 
         # SPACE 3
-        BALTIC_AVENUE = Monopoly_Space(
+        BALTIC_AVENUE = MonopolySpace(
             name = "Baltic Avenue (Brown)",  
             type = 'property',
             location = (530, BOTTOM_Y),
@@ -78,25 +81,28 @@ class Board:
         )
 
         # SPACE 4
-        INCOME_TAX = Monopoly_Space(
+        INCOME_TAX = MonopolySpace(
             name = "Income Tax", 
             type = 'incomeTax', 
-            location = (482, BOTTOM_Y)
+            location = (482, BOTTOM_Y),
+            isOwnable = False
         )
 
         # SPACE 5
-        READING_RAILROAD = Monopoly_Space(
+        READING_RAILROAD = MonopolySpace(
             name = "Reading Railroad", 
             type = 'railroad', 
             location = (432, BOTTOM_Y), 
+            isOwnable = True,
             cardImage = BLACK_P,
         )
 
         # SPACE 6
-        ORIENTAL_AVENUE = Monopoly_Space(
+        ORIENTAL_AVENUE = MonopolySpace(
             name = "Oriental Avenue (Light Blue)", 
             type = 'property',
             location = (383, BOTTOM_Y),
+            isOwnable = True,
             cardImage = LIGHT_BLUE_P,
             printedPrice = 100,
             mortgageValue = 50,
@@ -106,17 +112,19 @@ class Board:
         )
 
         # SPACE 7
-        CHANCE_1 = Monopoly_Space(
+        CHANCE_1 = MonopolySpace(
             name = "Chance", 
             type = 'chance', 
-            location = (332, BOTTOM_Y)
+            location = (332, BOTTOM_Y),
+            isOwnable = False
         )
 
         # SPACE 8
-        VERMONT_AVENUE = Monopoly_Space(
+        VERMONT_AVENUE = MonopolySpace(
             name = "Vermont Avenue (Light Blue)", 
             type = 'property',
             location = (285, BOTTOM_Y),
+            isOwnable =  True,
             cardImage = LIGHT_BLUE_P,
             printedPrice = 100,
             mortgageValue = 50,
@@ -126,10 +134,11 @@ class Board:
         )
 
         # SPACE 9
-        CONNECTICUT_AVENUE = Monopoly_Space(
+        CONNECTICUT_AVENUE = MonopolySpace(
             name = "Connecticut Avenue (Light Blue)", 
             type = 'property',
             location = (235, BOTTOM_Y),
+            isOwnable = True,
             cardImage = LIGHT_BLUE_P,
             printedPrice = 120,
             mortgageValue = 60,
@@ -139,17 +148,19 @@ class Board:
         )
 
         # SPACE 10
-        JUST_VISITING = Monopoly_Space(
+        JUST_VISITING = MonopolySpace(
             name = "Just Visting", 
             type = 'other', 
-            location = (149, 712)
+            location = (149, 712),
+            isOwnable = False
         )
 
         # SPACE 11
-        ST_CHARLES_PLACE = Monopoly_Space(
+        ST_CHARLES_PLACE = MonopolySpace(
             name = "St Charles Place (Pink)", 
             type = 'property',
             location = (LEFT_X, 626),
+            isOwnable = True,
             cardImage = PINK_P,
             printedPrice = 140,
             mortgageValue = 70,
@@ -159,18 +170,20 @@ class Board:
         )
 
         # SPACE 12
-        ELECTRIC_COMPANY = Monopoly_Space(
+        ELECTRIC_COMPANY = MonopolySpace(
             name = "Electric Company", 
             type = 'property',
-            location = (LEFT_X, 578), 
+            location = (LEFT_X, 578),
+            isOwnable = True,
             cardImage = WHITE_P 
         )
 
         # SPACE 13
-        STATES_AVENUE = Monopoly_Space(
+        STATES_AVENUE = MonopolySpace(
             name = "States Avenue (Pink)", 
             type = 'property',
             location = (LEFT_X, 528),
+            isOwnable =True,
             cardImage = PINK_P,
             printedPrice = 140,
             mortgageValue = 70,
@@ -180,10 +193,11 @@ class Board:
         )
 
         # SPACE 14
-        VIRGINIA_AVENUE = Monopoly_Space(
+        VIRGINIA_AVENUE = MonopolySpace(
             name = "Virginia Avenue (Pink)", 
             type = 'property',
             location = (LEFT_X, 478),
+            isOwnable = True,
             cardImage = PINK_P,
             printedPrice = 160,
             mortgageValue = 80,
@@ -194,18 +208,20 @@ class Board:
         )
 
         # SPACE 15
-        PENNSYLVANIA_RAILROAD = Monopoly_Space(
+        PENNSYLVANIA_RAILROAD = MonopolySpace(
             name = "Pennsylvania Railroad",
             type = 'railroad', 
             location = (LEFT_X, 430),
+            isOwnable = True,
             cardImage = BLACK_P
         )
 
         # SPACE 16
-        ST_JAMES_PLACE = Monopoly_Space(
+        ST_JAMES_PLACE = MonopolySpace(
             name = "St James Place (Orange)", 
             type = 'property',
             location = (LEFT_X, 380),
+            isOwnable = True,
             cardImage = ORANGE_P,
             printedPrice = 180,
             mortgageValue = 90,
@@ -215,17 +231,19 @@ class Board:
         )
 
         # SPACE 17
-        COMMUNITY_CHEST_2 = Monopoly_Space(
+        COMMUNITY_CHEST_2 = MonopolySpace(
             name = "Community Chest", 
             type = 'comChest', 
-            location = (LEFT_X, 331)
+            location = (LEFT_X, 331),
+            isOwnable = False 
         )
         
         # SPACE 18
-        TENNESSEE_AVENUE = Monopoly_Space(
+        TENNESSEE_AVENUE = MonopolySpace(
             name = "Tennesse Avenue (Orange)", 
             type = 'property',
             location = (LEFT_X, 280),
+            isOwnable = True,
             cardImage = ORANGE_P,
             printedPrice = 180,
             mortgageValue = 90,
@@ -235,10 +253,11 @@ class Board:
         )
 
         # SPACE 19
-        NEW_YORK_AVENUE = Monopoly_Space(
+        NEW_YORK_AVENUE = MonopolySpace(
             name = "New York Avenue (Orange)", 
             type = 'property',
             location = (LEFT_X, 232),
+            isOwnable = True,
             cardImage = ORANGE_P,
             printedPrice = 200,
             mortgageValue = 100,
@@ -248,17 +267,19 @@ class Board:
         )
 
         # SPACE 20
-        FREE_PARKING = Monopoly_Space(
+        FREE_PARKING = MonopolySpace(
             name = "Free Parking", 
             type = 'other', 
-            location = (LEFT_X, TOP_Y)
+            location = (LEFT_X, TOP_Y),
+            isOwnable = False
         )
 
         # SPACE 21
-        KENTUCKY_AVENUE = Monopoly_Space(
+        KENTUCKY_AVENUE = MonopolySpace(
             name = "Kentucky Avenue (Red)", 
             type = 'property',
             location = (236, TOP_Y),
+            isOwnable = True,
             cardImage = RED_P,
             printedPrice = 220,
             mortgageValue = 110,
@@ -268,17 +289,19 @@ class Board:
         )
 
         # SPACE 22
-        CHANCE_2 = Monopoly_Space(
+        CHANCE_2 = MonopolySpace(
             name = "Chance", 
             type = 'chance', 
-            location = (282, TOP_Y)
+            location = (282, TOP_Y),
+            isOwnable = False
         )
 
         # SPACE 23
-        INDIANA_AVENUE = Monopoly_Space(
+        INDIANA_AVENUE = MonopolySpace(
             name = "Indiana Avenue (Red)", 
             type = 'property',
             location = (335, TOP_Y),
+            isOwnable = True,
             cardImage = RED_P,
             printedPrice = 220,
             mortgageValue = 110,
@@ -288,10 +311,11 @@ class Board:
         )
 
         # SPACE 24
-        ILLINOIS_AVENUE = Monopoly_Space(
+        ILLINOIS_AVENUE = MonopolySpace(
             name = "Illinois Avenue (Red)", 
             type = 'property',
             location = (385, TOP_Y),
+            isOwnable = True,
             cardImage = RED_P,
             printedPrice = 240,
             mortgageValue = 120,
@@ -301,18 +325,20 @@ class Board:
         )
 
         # SPACE 25
-        B_O_RAILROAD = Monopoly_Space(
+        B_O_RAILROAD = MonopolySpace(
             name = "B & O Railroad",
             type = 'property',
             location = (432, TOP_Y),
+            isOwnable = True,
             cardImage = BLACK_P
         )
 
         # SPACE 26
-        ATLANTIC_AVENUE = Monopoly_Space(
+        ATLANTIC_AVENUE = MonopolySpace(
             name = "Atlantic Avenue (Yellow)", 
             type = 'property',
             location = (480, TOP_Y),
+            isOwnable = True,
             cardImage = YELLOW_P,
             printedPrice = 260,
             mortgageValue = 130,
@@ -323,10 +349,11 @@ class Board:
 
 
         # SPACE 27
-        VENTNOR_AVENUE = Monopoly_Space(
+        VENTNOR_AVENUE = MonopolySpace(
             name = "Ventnor Avenue (Yellow)", 
             type = 'property',
             location = (530, TOP_Y),
+            isOwnable = True,
             cardImage = YELLOW_P,
             printedPrice = 260,
             mortgageValue = 130,
@@ -337,18 +364,20 @@ class Board:
 
 
         # SPACE 28
-        WATER_WORKS = Monopoly_Space(
+        WATER_WORKS = MonopolySpace(
             name = "Water Works", 
             type = 'property',
             location = (585, TOP_Y), 
-            cardImage = "WHITE_P"
+            isOwnable = True,
+            cardImage = WHITE_P
         )
 
         # SPACE 29
-        MARVIN_GARDENS = Monopoly_Space(
+        MARVIN_GARDENS = MonopolySpace(
             name = "Marvin Gardens (Yellow)", 
             type = 'property',
             location = (630, TOP_Y),
+            isOwnable = True,
             cardImage = YELLOW_P,
             printedPrice = 280,
             mortgageValue = 140,
@@ -359,17 +388,19 @@ class Board:
 
 
         # SPACE 30
-        GO_TO_JAIL = Monopoly_Space(
+        GO_TO_JAIL = MonopolySpace(
             name = "Go to Jail", 
             type = 'goToJail', 
-            location = (RIGHT_X, TOP_Y)
+            location = (RIGHT_X, TOP_Y),
+            isOwnable = False
         )        
 
         # SPACE 31
-        PACIFIC_AVENUE = Monopoly_Space(
+        PACIFIC_AVENUE = MonopolySpace(
             name = "Pacific Avenue (Green)", 
             type = 'property',
             location = (RIGHT_X, 231),
+            isOwnable = True,
             cardImage = GREEN_P,
             printedPrice = 300,
             mortgageValue = 150,
@@ -379,10 +410,11 @@ class Board:
         )
 
         # SPACE 32
-        NORTH_CAROLINA_AVENUE = Monopoly_Space(
+        NORTH_CAROLINA_AVENUE = MonopolySpace(
             name = "North Carolina Avenue (Green)", 
             type = 'property',
             location = (RIGHT_X, 283),
+            isOwnable = True,
             cardImage = GREEN_P,
             printedPrice = 300,
             mortgageValue = 150,
@@ -392,17 +424,19 @@ class Board:
         )
 
         # SPACE 33
-        COMMUNITY_CHEST_3 = Monopoly_Space(
+        COMMUNITY_CHEST_3 = MonopolySpace(
             name = "Community Chest", 
             type = 'comChest', 
-            locaiton = (696, 333)
+            location = (696, 333),
+            isOwnable = False
         )
         
         # SPACE 34
-        PENNSYLVANIA_AVENUE = Monopoly_Space(
+        PENNSYLVANIA_AVENUE = MonopolySpace(
             name = "Pennsylvania Avenue (Green)", 
             type = 'property',
             location = (RIGHT_X, 380),
+            isOwnable = True,
             cardImage = GREEN_P,
             printedPrice = 320,
             mortgageValue = 160,
@@ -412,25 +446,28 @@ class Board:
         )
 
         # SPACE 35
-        SHORT_LINE = Monopoly_Space(
+        SHORT_LINE = MonopolySpace(
             name = "Short Line Railroad", 
             type = 'property', 
             location = (RIGHT_X, 430), 
+            isOwnable = True,
             cardImage = BLACK_P
         )
 
         # SPACE 36
-        CHANCE_3 = Monopoly_Space(
+        CHANCE_3 = MonopolySpace(
             name = "Chance", 
             type = 'chance', 
-            location = (RIGHT_X, 480)
+            location = (RIGHT_X, 480),
+            isOwnable = False
         )
 
         # SPACE 37
-        PARK_PLACE = Monopoly_Space(
+        PARK_PLACE = MonopolySpace(
             name = "Park Place (Blue)", 
             type = 'property',
             location = (RIGHT_X, 528),
+            isOwnable = True,
             cardImage = BLUE_P,
             printedPrice = 350,
             mortgageValue = 175,
@@ -440,17 +477,19 @@ class Board:
         )
 
         # SPACE 38
-        LUXURY_TAX = Monopoly_Space(
+        LUXURY_TAX = MonopolySpace(
             name = "Luxury Tax", 
             type = 'luxTax', 
-            location = (696, 581)
+            location = (696, 581),
+            isOwnable = False
         )
         
         # SPACE 39       
-        BOARDWALK = Monopoly_Space(
+        BOARDWALK = MonopolySpace(
             name = "Boardwalk (Blue)", 
             type = 'property',
             location = (RIGHT_X, 624),
+            isOwnable = True,
             cardImage = BLUE_P,
             printedPrice = 400,
             mortgageValue = 200,

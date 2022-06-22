@@ -1,6 +1,7 @@
+from turtle import isdown
 import pygame
 
-class Monopoly_Space:
+class MonopolySpace:
 
     name : str
     type : str
@@ -9,6 +10,7 @@ class Monopoly_Space:
     isOwnable : bool
     cardImage : pygame.Surface
     cardImageRect : pygame.rect.Rect
+    owner : str
 
     def __init__(self, name : str, type : str, 
     location : tuple, isOwnable : bool = False, 
@@ -22,21 +24,27 @@ class Monopoly_Space:
         self.isOwnable = isOwnable
 
         if isOwnable:
+            self.owner = "none"
             self.cardImage = pygame.transform.scale(cardImage, (50, 70))
-            self.cardImageRect = self.image.get_rect()
+            self.cardImageRect = self.cardImage.get_rect()
 
             # self.owner = None
             self.ownerRect = None
-            self.mortgageValue = None
             self.currentTier = 0
 
-            self.printed_price = 200
-            self.mortgage_value = 75
-            self.rent_tiers
+            self.printedPrice = printedPrice
+            self.mortgageValue = mortgageValue
+            self.rentTiers = rentTiers
             self.printedPrice = printedPrice
             self.mortgageValue = mortgageValue
             self.rentTiers = rentTiers
         if type =="property":
             self.color = color
             self.buildingCosts = buildingCosts
+
+    def get_current_price(self):
+        if self.isOwnable:
+            return self.rentTiers[self.currentTier]
+        else: 
+            raise TypeError("Space isn't ownable.")
 

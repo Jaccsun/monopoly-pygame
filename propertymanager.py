@@ -1,4 +1,4 @@
-from board.space import Monopoly_Space
+from board.space import MonopolySpace
 from window.button import Button
 from window.text import Text
 class PropertyManager: 
@@ -6,7 +6,7 @@ class PropertyManager:
         self.turnedOn = False
         self.selected_property = None
 
-    def display_prop_details(self, property : Monopoly_Space, texts, buttons):
+    def display_prop_details(self, property : MonopolySpace, texts, buttons):
         if not property.type == "property":
             raise TypeError("Space is not of property type.")
         if property.current_tier == -1:

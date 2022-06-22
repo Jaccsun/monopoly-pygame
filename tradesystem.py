@@ -1,6 +1,6 @@
 import pygame
 from player import Player
-from board.space import Monopoly_Space
+from board.space import MonopolySpace
 from cpu import CPU
 
 # Trade manager for the game.
@@ -11,9 +11,9 @@ class TradeSystem:
         self.turnedOn = False
 
         self.current_trade = 1
-        self.tradeRecipient = self.PLAYER_LIST[self.current_trade]
+        # self.tradeRecipient = self.PLAYER_LIST[self.current_trade]
 
-        self.leftPlayer, self.rightPlayer = None 
+        self.leftPlayer, self.rightPlayer = None, None
         self.tradeParticipants = [self.leftPlayer, self.rightPlayer]
 
         # Exchange windows
@@ -35,7 +35,7 @@ class TradeSystem:
     # as arguments, or will default to what is. leftPlayer cannot be a CPU
     def exchange(self, tradeParticipants : list[Player] = None, 
     moneyExchange : list[int] = None, 
-    propertyExchange : list[Monopoly_Space]=None, 
+    propertyExchange : list[MonopolySpace]=None, 
     overrideEvaluation : bool =False):
 
         if not tradeParticipants:
@@ -91,7 +91,7 @@ class TradeSystem:
 
     # Handles what happens when a property in the trade window is clicked on.
     # Entirely depends on context.
-    def handle_property_click(self, clickedProperty : Monopoly_Space):
+    def handle_property_click(self, clickedProperty : MonopolySpace):
         
         i = 0
         done = False
@@ -127,6 +127,6 @@ class TradeSystem:
                             self.rejected_offer = False
                     i += 1
                 self.update_trade_text()
-    def _find_trade_window(self, property : Monopoly_Space):
+    def _find_trade_window(self, property : MonopolySpace):
         print("test")
     

@@ -7,7 +7,7 @@ from tradesystem import TradeSystem
 from propertymanager import PropertyManager
 from board.board import Board
 from player import Player
-from board.space import Monopoly_Space
+from board.space import MonopolySpace
 class Game():
 
     def __init__(self):
@@ -38,7 +38,7 @@ class Game():
         # Constant list that never changes.
         self.PLAYER_LIST = [self.player1, self.player2, self.player3, self.player4]
         # List of players that will be reorganized.
-        self.players = [self.player, self.player2, self.player3, self.player4]
+        self.players = [self.player1, self.player2, self.player3, self.player4]
         
         self.ownerRects = []      
         self.currentTurn = 0 
@@ -47,7 +47,7 @@ class Game():
         pygame.font.init()
 
         self.texts = []
-        self.texts.append([Text("Welcome to monopoly!", 0, 0)])
+        self.texts.append(Text("Welcome to monopoly!", (0, 0)))
         self.buttons = []
         self.buttons.append(Button("Start", 20, 40, 120, 40))
 
@@ -66,7 +66,7 @@ class Game():
         self.drawPropertyCards = True
 
     # --- Information-----
-    def get_all_known_properties(self) -> list[Monopoly_Space]:
+    def get_all_known_properties(self) -> list[MonopolySpace]:
         allKnownPropertyList = []
         for player in self.PLAYER_LIST:
             for property in player.properties:
@@ -82,14 +82,14 @@ class Game():
     def advance_turn(self):
         player = self.players[self.currentTurn]
         
-        if player == self.player:
+        if player == self.player1:
             self.texts = []
             self.update_player_text()
-            in_jail = self.player.position == -1
+            in_jail = self.player1.position == -1
             if in_jail:
-                self.texts.append(Text("You're in jail.", 0, 0))
+                self.texts.append(Text("You're in jail.", (0, 0)))
             else:
-                self.texts.append(Text(f"It's your turn!", 0, 0))           
+                self.texts.append(Text(f"It's your turn!", (0, 0)))           
             self.buttons.extend([Button('Roll', 0, 25, 40, 30), 
             Button('Property Manager',50, 25, 165, 30), 
             Button('Trade',225, 25, 55, 30),
@@ -97,9 +97,9 @@ class Game():
         else:
             in_jail = player.position == -1
             if in_jail:
-                self.texts.append(Text(f"Player {player.id} is in jail.", 0, 0))
+                self.texts.append(Text(f"Player {player.id} is in jail.", (0, 0)))
             else:
-                self.texts.append((Text(f"It's Player {player.id}'s turn! (CPU)", 0, 0)))
+                self.texts.append((Text(f"It's Player {player.id}'s turn! (CPU)", (0, 0))))
             self.buttons = [(Button("Turn", 0, 70, 70, 40))]           
 
     # --------UPDATE -------------------
@@ -110,26 +110,26 @@ class Game():
                 self.texts.remove(t)
         self.CASH_TEXT_X_POS = 700
         self.player_cash_texts = [Text(f"Your Cash:       "      
-        f"${str(self.player.money)}", self.CASH_TEXT_X_POS, 0), 
+        f"${str(self.player1.money)}", (self.CASH_TEXT_X_POS, 0)), 
         Text(f"Player 2 Cash: ${str(self.player2.money)}", 
-        self.CASH_TEXT_X_POS, 20),
+        (self.CASH_TEXT_X_POS, 20)),
         Text(f"Player 3 Cash: ${str(self.player3.money)}", 
-        self.CASH_TEXT_X_POS, 40),
+        (self.CASH_TEXT_X_POS, 40)),
         Text(f"Player 4 Cash: ${str(self.player4.money)}", 
-        self.CASH_TEXT_X_POS, 60)]
+        (self.CASH_TEXT_X_POS, 60))]
         self.texts.extend(self.player_cash_texts)
 
     def update_trade_text(self):
         self.texts = []
         player = self.PLAYER_LIST[self.current_trade]
-        self.texts.extend([Text(f"You (Current cash: ${self.player.money})", 50, 0),
-        Text(f"Player {str(player.id)} (Current cash: ${player.money})", 450, 0),
-        Text(f"Cash: ${str(self.tradeSystem.money_exchange[0])}", 20, 600),
-        Text(f"Cash: ${str(self.money_exchange[1])}", 450, 600),
-        Text(f"Total value ${str(self.get_total_value(0))}", 20, 650),
-        Text(f"Total value ${str(self.get_total_value(1))}", 450, 650)])
+        self.texts.extend([Text(f"You (Current cash: ${self.player.money})", (50, 0)),
+        Text(f"Player {str(player.id)} (Current cash: ${player.money})", (450, 0)),
+        Text(f"Cash: ${str(self.tradeSystem.money_exchange[0])}", (20, 600)),
+        Text(f"Cash: ${str(self.money_exchange[1])}", (450, 600)),
+        Text(f"Total value ${str(self.get_total_value(0))}", (20, 650)),
+        Text(f"Total value ${str(self.get_total_value(1))}", (450, 650))])
         if self.rejected_offer:
-            self.texts.append(Text("Offer Rejected.", 20, 750))
+            self.texts.append(Text("Offer Rejected.", (20, 750)))
 
     def get_total_value(self, index):
         total = 0
@@ -153,7 +153,7 @@ class Game():
 
         # If mouse is over button. 
         if button:
-            print("test1")
+            button.currentColor = button.colorOver
         # If mouse if over property.
         if property:
             print("test2")
@@ -161,7 +161,7 @@ class Game():
         if mouseDown:
             self.handle_mouse_down(button, property)
     
-    def handle_mouse_down(self, button : Button, property : Monopoly_Space):
+    def handle_mouse_down(self, button : Button, property : MonopolySpace):
         # WE ARE NOW HANDLING ACTIONS.
         self._handle_mouse_down_button(button)
         if self.tradeSystem.turnedOn:
@@ -188,8 +188,8 @@ class Game():
         return None
 
     # Check the list of properties to find 
-    def _find_hovered_property(self, mousePos, propertyList : list[Monopoly_Space] = None
-    ) -> Monopoly_Space.cardImageRect:
+    def _find_hovered_property(self, mousePos, propertyList : list[MonopolySpace] = None
+    ) -> MonopolySpace:
         for property in propertyList:
             cardImageRect = property.cardImageRect
             mouse_over_card = (cardImageRect.x <= mousePos[0] <= cardImageRect.x + cardImageRect.width and
@@ -221,7 +221,7 @@ class Game():
 
         # All buttons and texts.
         for button in self.buttons:
-            pygame.draw.rect(self.WIN, button.current_color, button.rect)
+            pygame.draw.rect(self.WIN, button.currentColor, button.rect)
             button.text.draw(self.WIN)
         for text in self.texts:
             text.draw(self.WIN)
@@ -233,15 +233,17 @@ class Game():
         # Players and properties
         if self.drawPlayerPieces:
             for player in self.PLAYER_LIST:
-                player.draw(self.WIN)
+                self.WIN.blit(player.image, 
+                (player.rectangle.x - 5, player.rectangle.y))
 
+        # Draw property cards
         if self.drawPropertyCards:
-            self._draw_property_cards(self.player.properties,
-                (55, 760), True, self.player)
+            self._draw_property_cards(self.player1.properties,
+                (55, 760), True, self.player1)
             self._draw_property_cards(self.player2.properties,
-                (-55, 200), player=self.player2)
+                (-55, 200))
             self._draw_property_cards(self.player3.properties,
-                (700, 200), player=self.player3) 
+                (700, 200)) 
             self._draw_property_cards(self.player4.properties,
                 (400, 760), True, self.player4)  
 
@@ -254,8 +256,8 @@ class Game():
 
         pygame.display.update()
 
-    def _draw_property_cards(self, properties : list[Monopoly_Space], 
-    startingCoords : tuple[int, int], edgeCase : bool,
+    def _draw_property_cards(self, properties : list[MonopolySpace], 
+    startingCoords : tuple[int, int], edgeCase : bool = False,
     stack : bool =False):
         baseX = startingCoords[0]
         baseY = startingCoords[1]
