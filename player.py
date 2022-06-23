@@ -2,8 +2,7 @@ import os
 import itertools
 import random
 from typing import Tuple
-from board.board import Board
-from board.space import *
+from board.space import MonopolySpace
 from window.text import Text
 from window.button import Button
 import pygame
@@ -43,6 +42,7 @@ class Player:
         self.jail_turn = -1
         self.roll_num = None
 
+    # -- Informational -- #
 
     def get_prop_monopoly_status(self, property):
         color, count = self.card.image_str, 0
@@ -64,14 +64,11 @@ class Player:
             return True
         return False
 
-
-
-# ---------OLD ----------------------------------------------------------------------------
-
+    # -- Actions -- #
 
     # Moves player to a position on the board, accounts
     # for moving past GO.
-    def move(self, roll : int, board : Board):
+    def move(self, roll : int, board):
         if(self.position + roll >= 40):
             self.money += 200
             self.position = (self.position + roll) - 40
@@ -84,8 +81,237 @@ class Player:
         self.rectangle.y = landedOnSpace.y 
 
         return landedOnSpace
+    
+    def roll(self, game, overrideRandom=None, cpu=False):
+        
+        who = f"Player {self.id}" if cpu else "You"
+        # Boolean to determine if player is in jail.
+        IN_JAIL = (self.position == -1)
+        # Set pointers for each value.
+        board = game.board
+        texts = game.texts
+        players = game.players
+        buttons = game.buttons
+        # Roll is random, unless specificed.
+        roll = overrideRandom if overrideRandom else random.randrange(2, 12)
+        self.roll_num = roll
+        # Escape by default is true.
+        escape = True
+        # If player is in jail
+        if IN_JAIL:
+            # If player has exhausted all rolls.
+            if self.jail_turn == 3:
+                texts.append(Text(who + " must pay $50 to escape jail.", (0, 80)))
+                self.money -= 50
+                self.jail_turn = -1
+                # Set position to just visiting and evalute roll.
+                self.position = 10
+                escape = True
+            # Attempt a roll if not.
+            else:
+                roll_1 = random.randrange(1, 6)
+                roll_2 = random.randrange(1, 6)
+                # If roll is successful.
+                if roll_1 == roll_2:
+                    texts.append(Text(who + f" rolled a {str(roll_1 + roll_2)} "
+                    + f" with doubles and escaped jail.", (0, 80)))
+                    self.position = 10
+                    escape = True
+                # If roll fails.
+                else:
+                    texts.append(Text(who + f" rolled a {str(roll_1 + roll_2)} "
+                    + f"with no double and didn't escape jail.", (0, 80)))
+                    self.jail_turn += 1
+                    buttons.clear()
+                    buttons.append(Button("next", Rect(0, 50, 70, 40)))    
+                    escape = False
+        # If player has escaped jail, proceed as normal.
+        if escape:
+            # Calclulate the space and communicate info to player.
+            landedOnSpace = self.move(roll, board)
+            game.landedOnSpace = landedOnSpace
+            texts.append(Text(who + f" rolled a {roll} and "
+            + f"landed on {landedOnSpace.name}", (0, 0))) 
 
-    def evauluate_ownable(self, game, landedOnSpace, roll, cpu=False):
+            # Update the rectangle of the player.
+            self.rectangle.x = landedOnSpace.x
+            self.rectangle.y = landedOnSpace.y
+
+            # If the space is ownable
+            if landedOnSpace.isOwnable:
+                # Evaluate the ownable property.
+                self._evauluate_ownable(game, landedOnSpace, roll, cpu) 
+            # If space of chance or community chest type.
+            elif (landedOnSpace.type is 'chance'
+            or landedOnSpace.type is 'comChest'): 
+
+                # Call the draw card method.
+                buttons.clear()
+                card_text = self.draw_card(landedOnSpace, board, players)
+                texts.append(card_text)
+                buttons.append(Button("next", Rect(0, 50, 70, 40)))
+        
+            # If space is one of the two taxes.
+            elif (landedOnSpace.name == "Luxury Tax" 
+            or landedOnSpace.name == "Income Tax"):
+                self.pay(game, roll, cpu=cpu)
+            elif (landedOnSpace.name == "Go to Jail"):
+                self.teleport(-1, game.board)
+                buttons.clear()
+                buttons.append(Button("next", Rect(0, 50, 70, 40)))
+            elif (landedOnSpace.name == "GO"):
+                texts.append(Text("Collect $200", (0, 20)))
+                self.money += 200
+                buttons.clear()
+                buttons.append(Button("next", Rect(0, 50, 70, 40)))
+            else:
+                texts.append(Text("Not buyable.", (0, 20)))
+                buttons.clear()
+                buttons.append(Button("next", Rect(0, 50, 70, 40)))
+            game.update_player_text() 
+
+    # Adds property to players inventory and calculates
+    # the position of the owner_rect.
+    def buy(self, landedOnSpace : MonopolySpace):
+
+        self.money -= landedOnSpace.printed_price
+        self.properties.append(landedOnSpace)
+        landedOnSpace.owner = self
+        if landedOnSpace.type == 'property':
+            landedOnSpace.increase_tier()
+        
+        BOTTOM_Y = 692
+        LEFT_X = 150
+        RIGHT_X = 696
+
+        x = landedOnSpace.x
+        y = landedOnSpace.y
+
+        if (landedOnSpace.x == LEFT_X):
+            x += 80
+            y += 11
+        elif (landedOnSpace.x == RIGHT_X):
+            x -= 34
+            y += 10
+        elif (landedOnSpace.y == BOTTOM_Y):
+            y -= 30
+            x += 15
+        else:
+            x += 12
+            y += 70
+        landedOnSpace.owner_rect = [pygame.Rect(x, y, 10, 10), self.color]
+        landedOnSpace.owner = "player" + str(self.id)
+
+    # Pays the price owed on a space. Also works for the Taxes.
+    def pay(self, game, player, roll=None, cpu=False):    
+        who = f"Player {self.id}" if cpu else "You"
+
+        landedOnSpace = game.landedOnSpace
+        roll = self.roll_num 
+
+        is_income = landedOnSpace.name == "Income Tax"
+        is_luxury = landedOnSpace.name == "Luxury Tax"
+        is_tax = is_income or is_luxury
+        is_railroad = landedOnSpace.type == 'railroad'
+        is_utility = landedOnSpace.type == 'utility'
+
+        if is_income:
+            price = 200
+        elif is_luxury :
+            price = 100
+        elif is_railroad:
+            owner = landedOnSpace.owner
+            tier = -1
+            for p in owner.properties:
+                if p.type == 'railroad':
+                    tier += 1
+            landedOnSpace.currentTier = tier
+            price = landedOnSpace.get_current_price()
+        elif is_utility:
+            owner = landedOnSpace.owner
+            tier = -1
+            for p in owner.properties:
+                if p.type == 'railroad':
+                    tier += 1     
+            landedOnSpace.currentTier = tier
+            price = landedOnSpace.get_current_price() * roll
+                         
+        else:
+            price = landedOnSpace.get_current_price()
+        texts = game.texts
+        if (self.money - price < 0):
+            w = "doesn't" if cpu else "don't"
+            texts.append(Text(who + " " + w   
+            + " have enough money to pay.", (0, 20)))
+        
+        else:
+            if is_tax:
+                texts.append(Text(who + " paid the fee.", (0, 20)))
+            else:
+                texts.append(Text(who + f" paid Player {str(landedOnSpace.owner.id)} "
+                f"{str(price)}$", (0, 0)))
+                landedOnSpace.owner.money += price
+            self.money -= price
+        game.buttons = [Button("next", Rect(0, 50, 70, 40))]
+
+    # Bankrupts the player.
+    def bankrupt(self, game):
+        players = game.players
+        players.remove(self)
+
+    # Determines whether the property is a monopoly.
+    def is_monopoly(self, property : MonopolySpace):
+        color, count = property.card.image_str, 0
+        for p in self.properties:
+            if p.card.image_str == color:
+                count += 1
+        if count == 3 or (count == 2 and 
+        (color == "BROWN_P" or color == "BLUE_P")):
+            return True
+        return False     
+
+    # Mortgage a property.
+    def mortgage(self, property : MonopolySpace):
+        property.currentTier = -1
+        self.money += property.mortgage_value
+
+    # Unmortgage a property.
+    def unmortgage(self, property : MonopolySpace):
+        if property.type == 'utility':
+            if self.money - property.mortgage_value > 0:
+                count = 0
+                for p in self.properties:
+                    if p.type == 'utility':
+                        count += 1
+                if count == 2:
+                    property.currentTier = 1
+                else:
+                    property.currentTier = 0
+                self.money -= property.mortgage_value
+        if property.type == 'railroad':
+            if self.money - property.mortgage_value > 0:
+                count = 0
+                for p in self.properties:
+                    if p.type == 'railroad':
+                        count += 1
+                if count == 1:
+                    property.currentTier = 0
+                elif count == 2:
+                    property.currentTier = 1
+                elif count == 3:
+                    property.currentTier = 2
+                elif count == 4:
+                    property.currentTier = 3
+                self.money -= property.mortgage_value
+        if property.type == 'property':
+            if self.money - property.mortgage_value > 0:
+                if self.is_monopoly(property):
+                    property.currentTier = 1
+                else:
+                    property.currentTier = 0
+                self.money -= property.mortgage_value
+
+    def _evauluate_ownable(self, game, landedOnSpace=None, roll=None, cpu=False):
 
         who = f"Player {self.id}" if cpu else "You"
         texts, buttons = game.texts, game.buttons
@@ -142,11 +368,10 @@ class Player:
             if not cpu:
                 buttons.clear()
                 # Tell who owner is.
-                texts.append(Text(f"This property is owned by Player " + 
-                + str(landedOnSpace.owner), (0, 100)))
+                texts.append(Text(f"This property is owned by Player {str(landedOnSpace.owner)}", (0, 100)))
 
                 # If not mortaged.
-                if landedOnSpace.current_tier > -1:
+                if landedOnSpace.currentTier > -1:
                     texts.append(Text(f"Amount owned: " 
                     + f"{str(landedOnSpace.get_current_price())}$", (350, 100)))
                     buttons.extend([Button("Pay", Rect(0, 50, 70, 40)), 
@@ -158,253 +383,8 @@ class Player:
                     buttons.clear()
                     buttons.append(Button("next", Rect(0, 50, 70, 40)))
 
-    def roll(self, game, r=None, cpu=False):
-        
-        who = f"Player {self.id}" if cpu else "You"
-        # Boolean to determine if player is in jail.
-        IN_JAIL = (self.position == -1)
-        # Set pointers for each value.
-        board = game.board
-        texts = game.texts
-        players = game.players
-        buttons = game.buttons
 
-        # Clear all current text.
-        texts.clear()
-        # Roll is random, unless specificed.
-        roll = r if r else random.randrange(2, 12)
-        self.roll_num = roll
-        # Escape by default is true.
-        escape = True
-        # If player is in jail
-        if IN_JAIL:
-            # If player has exhausted all rolls.
-            if self.jail_turn == 3:
-                texts.append(Text(who + " must pay $50 to escape jail.", (0, 80)))
-                self.money -= 50
-                self.jail_turn = -1
-                # Set position to just visiting and evalute roll.
-                self.position = 10
-                escape = True
-            # Attempt a roll if not.
-            else:
-                roll_1 = random.randrange(1, 6)
-                roll_2 = random.randrange(1, 6)
-                # If roll is successful.
-                if roll_1 == roll_2:
-                    texts.append(Text(who + f" rolled a {str(roll_1 + roll_2)} "
-                    + f"with doubles and escaped jail.", (0, 80)))
-                    self.position = 10
-                    escape = True
-                # If roll fails.
-                else:
-                    texts.append(Text(who + f" rolled a {str(roll_1 + roll_2)} "
-                    + f"with no double and didn't escape jail.", (0, 80)))
-                    self.jail_turn += 1
-                    buttons.clear()
-                    buttons.append(Button("next", Rect(0, 50, 70, 40)))    
-                    escape = False
-        # If player has escaped jail, proceed as normal.
-        if escape:
-            # Calclulate the space and communicate info to player.
-            landedOnSpace = self.move(roll, board)
-            game.landedOnSpace = landedOnSpace
-            texts.append(Text(who + f" rolled a {roll} and "
-            + f"landed on {landedOnSpace.name}", (0, 0))) 
-
-            # Update the rectangle of the player.
-            self.rectangle.x = landedOnSpace.x
-            self.rectangle.y = landedOnSpace.y
-
-            # If the space is ownable
-            if landedOnSpace.isOwnable:
-                # Evaluate the ownable property.
-                self.evauluate_ownable(game, landedOnSpace, roll, cpu) 
-            # If space of chance or community chest type.
-            elif (landedOnSpace.type == 'chance'
-            or landedOnSpace.type == 'comChest'): 
-
-                # Call the draw card method.
-                buttons.clear()
-                card_text = self.draw_card(landedOnSpace, board, players)
-                texts.append(card_text)
-                buttons.append(Button("next", Rect(0, 50, 70, 40)))
-        
-            # If space is one of the two taxes.
-            elif (landedOnSpace.name == "Luxury Tax" 
-            or landedOnSpace.name == "Income Tax"):
-                self.pay(game, roll, cpu=cpu)
-            elif (landedOnSpace.name == "Go to Jail"):
-                self.teleport(-1, game.board)
-                buttons.clear()
-                buttons.append(Button("next", Rect(0, 50, 70, 40)))
-            elif (landedOnSpace.name == "GO"):
-                texts.append(Text("Collect $200", (0, 20)))
-                self.money += 200
-                buttons.clear()
-                buttons.append(Button("next", Rect(0, 50, 70, 40)))
-            else:
-                texts.append(Text("Not buyable.", (0, 20)))
-                buttons.clear()
-                buttons.append(Button("next", Rect(0, 50, 70, 40)))
-            game.update_player_text() 
-
-    # Teleports the player to a certain position on the board.
-    def teleport(self, space : int, board : Board):
-        self.position = space
-        if space != -1:
-            s = board.space[self.position]
-        else:
-            s = board.JAIL
-            self.jail_turn = 0
-        self.rectangle.x = s.x
-        self.rectangle.y = s.y 
-
-
-    # Adds property to players inventory and calculates
-    # the position of the owner_rect.
-    def buy(self, landedOnSpace : MonopolySpace):
-
-        self.money -= landedOnSpace.printed_price
-        self.properties.append(landedOnSpace)
-        landedOnSpace.owner = self
-        if landedOnSpace.type == 'property':
-            landedOnSpace.increase_tier()
-        
-        BOTTOM_Y = 692
-        LEFT_X = 150
-        RIGHT_X = 696
-
-        x = landedOnSpace.x
-        y = landedOnSpace.y
-
-        if (landedOnSpace.x == LEFT_X):
-            x += 80
-            y += 11
-        elif (landedOnSpace.x == RIGHT_X):
-            x -= 34
-            y += 10
-        elif (landedOnSpace.y == BOTTOM_Y):
-            y -= 30
-            x += 15
-        else:
-            x += 12
-            y += 70
-        landedOnSpace.owner_rect = [pygame.Rect(x, y, 10, 10), self.color]
-        landedOnSpace.owner = "player" + str(self.id)
-
-    # Pays the price owed on a space. Also works for the Taxes.
-    def pay(self, game, roll=None, cpu=False):    
-        who = f"Player {self.id}" if cpu else "You"
-        game.texts.clear() 
-        game.buttons.clear()
-        landedOnSpace = game.landedOnSpace
-
-        roll = self.roll_num 
-
-        is_income = landedOnSpace.name == "Income Tax"
-        is_luxury = landedOnSpace.name == "Luxury Tax"
-        is_tax = is_income or is_luxury
-        is_railroad = landedOnSpace.type == 'railroad'
-        is_utility = landedOnSpace.type == 'utility'
-
-        if is_income:
-            price = 200
-        elif is_luxury :
-            price = 100
-        elif is_railroad:
-            owner = landedOnSpace.owner
-            tier = -1
-            for p in owner.properties:
-                if p.type == 'railroad':
-                    tier += 1
-            landedOnSpace.current_tier = tier
-            price = landedOnSpace.get_current_price()
-        elif is_utility:
-            owner = landedOnSpace.owner
-            tier = -1
-            for p in owner.properties:
-                if p.type == 'railroad':
-                    tier += 1     
-            landedOnSpace.current_tier = tier
-            price = landedOnSpace.get_current_price() * roll
-                         
-        else:
-            price = landedOnSpace.get_current_price()
-        texts = game.texts
-        if (self.money - price < 0):
-            w = "doesn't" if cpu else "don't"
-            texts.append(Text(who + " " + w   
-            + " have enough money to pay.", (0, 20)))
-        
-        else:
-            if is_tax:
-                texts.append(Text(who + " paid the fee.", (0, 20)))
-            else:
-                texts.append(Text(who + f" paid Player {str(landedOnSpace.owner.id)} "
-                f"{str(price)}$", (0, 0)))
-                landedOnSpace.owner.money += price
-            self.money -= price
-        game.buttons = [Button("next", Rect(0, 50, 70, 40))]
-
-    # Bankrupts the player.
-    def bankrupt(self, game):
-        players = game.players
-        players.remove(self)
-
-    # Determines whether the property is a monopoly.
-    def is_monopoly(self, property : MonopolySpace):
-        color, count = property.card.image_str, 0
-        for p in self.properties:
-            if p.card.image_str == color:
-                count += 1
-        if count == 3 or (count == 2 and 
-        (color == "BROWN_P" or color == "BLUE_P")):
-            return True
-        return False     
-
-    # Mortgage a property.
-    def mortgage(self, property : MonopolySpace):
-        property.current_tier = -1
-        self.money += property.mortgage_value
-
-    # Unmortgage a property.
-    def unmortgage(self, property : MonopolySpace):
-        if property.type == 'utility':
-            if self.money - property.mortgage_value > 0:
-                count = 0
-                for p in self.properties:
-                    if p.type == 'utility':
-                        count += 1
-                if count == 2:
-                    property.current_tier = 1
-                else:
-                    property.current_tier = 0
-                self.money -= property.mortgage_value
-        if property.type == 'railroad':
-            if self.money - property.mortgage_value > 0:
-                count = 0
-                for p in self.properties:
-                    if p.type == 'railroad':
-                        count += 1
-                if count == 1:
-                    property.current_tier = 0
-                elif count == 2:
-                    property.current_tier = 1
-                elif count == 3:
-                    property.current_tier = 2
-                elif count == 4:
-                    property.current_tier = 3
-                self.money -= property.mortgage_value
-        if property.type == 'property':
-            if self.money - property.mortgage_value > 0:
-                if self.is_monopoly(property):
-                    property.current_tier = 1
-                else:
-                    property.current_tier = 0
-                self.money -= property.mortgage_value
-
-    def draw_card(self, chance : MonopolySpace, board : Board, players):
+    def draw_card(self, board, chance : MonopolySpace, players):
         r = chance.draw_card()
         Y_CONST = 20
         match r:
@@ -476,10 +456,10 @@ class Player:
                 + "Do not pass GO, do not collect $200.", y=Y_CONST)
             case 9:
                 for p in self.properties:
-                    if p.current_tier > 2:
-                        for _ in range(2, p.current_tier):
+                    if p.currentTier > 2:
+                        for _ in range(2, p.currentTier):
                             self.money -= 25
-                    if p.current_tier == 6:
+                    if p.currentTier == 6:
                         self.money -= 100
                 return Text("Make general repairs on all your property: "
                 + "For each house pay $25, For each hotel $100.", y=Y_CONST)
@@ -512,8 +492,8 @@ class Player:
         return Text("Missed case?")
 
     def draw_card(self, community_chest : MonopolySpace, 
-    board : Board, players):
-        r = community_chest.draw_card()
+    board, players):
+        r = random.randint(0, 16)
         Y_CONST = 20
         match r:
             case 0:
@@ -580,10 +560,10 @@ class Player:
                 y=Y_CONST)
             case 14:
                 for p in self.properties:
-                    if p.current_tier > 2:
-                        for _ in range(2, p.current_tier):
+                    if p.currentTier > 2:
+                        for _ in range(2, p.currentTier):
                             self.money -= 40
-                    if p.current_tier == 6:
+                    if p.currentTier == 6:
                         self.money -= 115
 
                 return Text("You are assessed for street repairs:"

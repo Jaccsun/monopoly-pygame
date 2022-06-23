@@ -95,6 +95,9 @@ class Board:
             location = (432, BOTTOM_Y), 
             isOwnable = True,
             cardImage = BLACK_P,
+            printedPrice = 200,
+            mortgageValue = 100,
+            rentTiers = [25, 50, 100, 200]
         )
 
         # SPACE 6
@@ -213,7 +216,10 @@ class Board:
             type = 'railroad', 
             location = (LEFT_X, 430),
             isOwnable = True,
-            cardImage = BLACK_P
+            cardImage = BLACK_P,
+            printedPrice = 200,
+            mortgageValue = 100,
+            rentTiers = [25, 50, 100, 200]
         )
 
         # SPACE 16
@@ -330,7 +336,10 @@ class Board:
             type = 'property',
             location = (432, TOP_Y),
             isOwnable = True,
-            cardImage = BLACK_P
+            cardImage = BLACK_P,
+            printedPrice = 200,
+            mortgageValue = 100,
+            rentTiers = [25, 50, 100, 200]
         )
 
         # SPACE 26
@@ -451,7 +460,10 @@ class Board:
             type = 'property', 
             location = (RIGHT_X, 430), 
             isOwnable = True,
-            cardImage = BLACK_P
+            cardImage = BLACK_P,
+            printedPrice = 200,
+            mortgageValue = 100,
+            rentTiers = [25, 50, 100, 200]
         )
 
         # SPACE 36

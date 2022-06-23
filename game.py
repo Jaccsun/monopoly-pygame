@@ -84,7 +84,7 @@ class Game():
     # -------------------Turn-Advancement-----------------------#
 
     # Method used to advance the game to the next turn.                
-    def advance_turn(self):
+    def advance_turn(self) -> None:
 
         if self.currentTurn == 3:
             self.currentTurn = 0
@@ -92,11 +92,9 @@ class Game():
             self.currentTurn += 1
 
         player = self.players[self.currentTurn]
-        
-        if player == self.player1:
-            self.texts = []
-            self.update_player_text()
-            in_jail = self.player1.position == -1
+        isPlayer = type(player) is not CPU
+        in_jail = (player.position == -1)
+        if isPlayer:
             if in_jail:
                 self.texts.append(Text("You're in jail.", (0, 0)))
             else:
@@ -104,22 +102,24 @@ class Game():
 
             self.buttons.extend([
                 Button('Roll', Rect(0, 25, 40, 30), 
-                event=self.player1.roll(self)), 
+                event=player.roll(self)), 
                 Button('Property Manager', Rect(50, 25, 165, 30), 
                 event=self.propertyManager.open), 
                 Button('Trade', Rect(225, 25, 55, 30), 
-                event=self.tradeSystem.open(self.player1, 
-                self.player2, self.buttons)),
+                event=self.tradeSystem.open, eventArgs=[self.player1, 
+                self.player2, self.buttons]),
                 Button('Bankrupt', Rect(290, 25, 80, 30), 
                 event=self.bankrupt_event)
             ])
+        # IF CPU
         else:
-            in_jail = player.position == -1
+            in_jail = (player.position == -1)
             if in_jail:
                 self.texts.append(Text(f"Player {player.id} is in jail.", (0, 0)))
             else:
                 self.texts.append((Text(f"It's Player {player.id}'s turn! (CPU)", (0, 0))))
-            self.buttons = [(Button("Turn", Rect(0, 70, 70, 40), event=self.advance_turn))]           
+            self.buttons = [(Button("Turn", Rect(0, 70, 70, 40), event=player.roll,
+            eventArgs=[self]))]  
 
     #------------Hovering-and-Clicking-functionality------------#
 
@@ -149,6 +149,7 @@ class Game():
         if button: 
             self._run_event_wrapper(
                 button.event, 
+                button.eventArgs,
                 button.eventClearTextAndButton, 
                 button.eventUpdatePlayerText
         )
@@ -226,12 +227,13 @@ class Game():
         print("Thanks for playing!")
 
 
-    def _run_event_wrapper(self, event, 
+    def _run_event_wrapper(self, event, eventArgs : list, 
     eventClearTextAndButton, eventUpdatePlayerText):
         if eventClearTextAndButton:
             self.buttons.clear()
             self.texts.clear()
-        event()
+        # eventArgs will be unwrapped into the function.
+        event(*eventArgs)
         if eventUpdatePlayerText:
             self.update_player_text()
         

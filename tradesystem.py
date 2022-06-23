@@ -37,7 +37,7 @@ class TradeSystem:
         # self.current_trade = 1
         # self.tradeParticipants.extend([self.player, self.player_2])
 
-        self.buttons.extend([
+        buttons.extend([
             Button("Next Player",Rect(790, 0, 105, 40), 
                 event=self.change_trade_recipient),
             Button("Back", Rect(0, 0, 40, 40),

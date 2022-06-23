@@ -12,7 +12,7 @@ class Button:
     # create a text object out of the value.
     def __init__(self, text : Text, rect : pygame.rect.Rect , 
     color=(40, 40, 40), colorOver = (90, 90, 90), event = None,
-    eventClearTextAndButton = True, eventUpdatePlayerText = True):
+    eventArgs : list = [], eventClearTextAndButton = True, eventUpdatePlayerText = True):
         if type(text) is str:
             self.text= Text(text, (rect.x, rect.y))
         elif type(text) is Text:
@@ -29,6 +29,7 @@ class Button:
         #-- Settings for the event that is connected to this button.
 
         self.event = event
+        self.eventArgs = eventArgs
         self.eventClearTextAndButton = eventClearTextAndButton
         self.eventUpdatePlayerText = eventUpdatePlayerText
 
