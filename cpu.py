@@ -1,30 +1,31 @@
 from random import random
+from board.board import Board
+from board.space import *
 from player import Player
-from window.text import Text
-from window.button import Button
+from text import Text
+import random
 
 class CPU(Player):
     
     def __init__(self, color, image):
         super().__init__(color, image)
 
+    def roll(self, game, r=None): 
+        super().roll(game, cpu=True, r=r)
+
     def attempt_mortgage(self, cost):
         for p in self.properties:
-            if p.type is 'property' or p.type is 'railroad' or p.type is 'utility':
+            if type(p) is Monopoly_Ownable:
                 p.mortgage()
             if self.money >= cost:
                 return True
         return False
 
-    def roll(self, texts, buttons, players, board, 
-    exitFunction, overrideRandom=None, cpu=True) -> list[Text, Button]:
-        super().roll(texts, buttons, board, 
-        exitFunction, overrideRandom, cpu)
+    def draw_card(self, community_chest: Monopoly_Community_Chest, board: Board, players):
+        return super().draw_card(community_chest, board, players)
 
-    # DEPRECATED
-    # def draw_card(self, community_chest: Monopoly_Community_Chest, board: Board, players):
-    #     return super().draw_card(community_chest, board, players)
-    
+    # Cpu evaluation of the quality of a trade. 
+    # Based on amount of points given.
     def evaluate_trade(self, game):
 
         # Points that indicate quality of trade.
