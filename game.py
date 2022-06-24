@@ -102,7 +102,8 @@ class Game():
 
             self.buttons.extend([
                 Button('Roll', Rect(0, 25, 40, 30), 
-                event=player.roll(self)), 
+                event=player.roll, eventArgs=[self.texts, self.buttons, 
+                self.players, self.board, self.advance_turn]), 
                 Button('Property Manager', Rect(50, 25, 165, 30), 
                 event=self.propertyManager.open), 
                 Button('Trade', Rect(225, 25, 55, 30), 
@@ -119,7 +120,8 @@ class Game():
             else:
                 self.texts.append((Text(f"It's Player {player.id}'s turn! (CPU)", (0, 0))))
             self.buttons = [(Button("Turn", Rect(0, 70, 70, 40), event=player.roll,
-            eventArgs=[self]))]  
+            eventArgs=[self.texts, self.buttons, 
+            self.players, self.board, self.advance_turn]))]  
 
     #------------Hovering-and-Clicking-functionality------------#
 
@@ -158,7 +160,8 @@ class Game():
         if self.tradeSystem.turnedOn:
             self.tradeSystem.handle_property_click(property)
         if self.propertyManager.turnedOn:
-            self._handle_mouse_down_card_p_manage()
+            self.propertyManager.display_prop_details(property, 
+            self.texts, self.buttons)
         
     def _find_hovered_button(self, buttons : list[Button], mousePos) -> Button:
         for button in buttons:

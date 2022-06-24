@@ -7,7 +7,7 @@ class PropertyManager:
         self.selected_property = None
 
     def open(self) -> None:
-        print("test")
+        self.turnedOn = True
 
     def display_prop_details(self, property : MonopolySpace, texts, buttons):
         if not property.type == "property":

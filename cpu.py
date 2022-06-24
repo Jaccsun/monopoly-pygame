@@ -1,6 +1,7 @@
 from random import random
 from player import Player
 from window.text import Text
+from window.button import Button
 
 class CPU(Player):
     
@@ -15,8 +16,10 @@ class CPU(Player):
                 return True
         return False
 
-    def roll(self, game, overrideRandom=None, cpu=True):
-        return super().roll(game, overrideRandom, cpu)
+    def roll(self, texts, buttons, players, board, 
+    exitFunction, overrideRandom=None, cpu=True) -> list[Text, Button]:
+        super().roll(texts, buttons, board, 
+        exitFunction, overrideRandom, cpu)
 
     # DEPRECATED
     # def draw_card(self, community_chest: Monopoly_Community_Chest, board: Board, players):
